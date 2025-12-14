@@ -44,9 +44,6 @@ const toOrderCard = (
     order.orderedItems?.reduce((acc, item) => acc + (item.quantity ?? 0), 0) ||
     0
 
-  const statusLabel =
-    typeof order.status === "number" ? OrderStatus[order.status] : order.status
-
   return {
     id: order.orderId || order.orderNum || String(fallbackIndex),
     productName: firstItem?.productName || "상품명 없음",
@@ -58,7 +55,7 @@ const toOrderCard = (
     amount: totalQuantity || 1,
     date: order.orderDate || "",
     orderNumber: order.orderNum || order.orderId || String(fallbackIndex),
-    status: statusLabel,
+    status: order.status || "",
   }
 }
 

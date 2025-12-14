@@ -187,9 +187,7 @@ export default function OrderDetailPage() {
           <div className="text-right">
             <p className="text-sm text-muted-foreground">상태</p>
             <p className="text-lg font-semibold text-primary">
-              {order?.status !== undefined
-                ? OrderStatus[order.status]
-                : "UNKNOWN"}
+              {order?.status || "UNKNOWN"}
             </p>
           </div>
         </div>
