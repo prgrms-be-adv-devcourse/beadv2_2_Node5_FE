@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
 import { Save } from "lucide-react"
-import { apiClient, memberApi, type MemberInfoResponse } from "@/lib/api-client"
+import { apiClient } from "@/lib/api-client"
+import { memberApi, type MemberInfoResponse } from "@/lib/api/member"
 import { useRouter } from "next/navigation"
 
 type MemberFormState = Pick<

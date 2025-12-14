@@ -6,12 +6,13 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { ArrowDown, ArrowUp, Plus } from "lucide-react"
 import {
-  paymentApi,
-  type PaymentInfo,
+} from "@/lib/api-client"
+import { paymentApi, type PaymentInfo } from "@/lib/api/payment"
+import {
   walletApi,
   type WalletDepositInfo,
   type WalletWithdrawInfo,
-} from "@/lib/api-client"
+} from "@/lib/api/wallet"
 
 interface Transaction {
   id: string

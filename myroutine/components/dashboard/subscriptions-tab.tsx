@@ -5,9 +5,8 @@ import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import {
   formatDaysOfWeek,
-  subscriptionApi,
-  type SubscriptionInfo,
 } from "@/lib/api-client"
+import { subscriptionApi, type SubscriptionInfo } from "@/lib/api/subscription"
 import Link from "next/link"
 
 type SubscriptionItem = Partial<

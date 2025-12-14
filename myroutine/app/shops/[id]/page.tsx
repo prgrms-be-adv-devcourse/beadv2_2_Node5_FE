@@ -5,12 +5,8 @@ import Link from "next/link"
 import { useParams, useRouter } from "next/navigation"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import {
-  shopApi,
-  type ShopInfoResponse,
-  productApi,
-  type ShopDeleteResponse,
-} from "@/lib/api-client"
+import { shopApi, type ShopInfoResponse, type ShopDeleteResponse } from "@/lib/api/shop"
+import { productApi } from "@/lib/api/product"
 import { persistAuthPayload } from "@/lib/api/auth"
 import { Mail, Phone, MapPin } from "lucide-react"
 import { Input } from "@/components/ui/input"

@@ -9,7 +9,7 @@ import {
   type OrderDetailInfo,
   OrderStatus,
   OrderType,
-} from "@/lib/api-client"
+} from "@/lib/api/order"
 
 const MOCK_ORDER_DETAIL: OrderDetailInfo = {
   orderId: "mock-order-1",

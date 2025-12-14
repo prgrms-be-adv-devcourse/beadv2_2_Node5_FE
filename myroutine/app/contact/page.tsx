@@ -30,9 +30,21 @@ export default function ContactPage() {
   }
 
   const infoItems = [
-    { icon: <Mail className="w-4 h-4" />, label: "이메일", value: "support@myroutine.com" },
-    { icon: <Phone className="w-4 h-4" />, label: "전화", value: "02-1234-5678 (평일 10-18시)" },
-    { icon: <MapPin className="w-4 h-4" />, label: "주소", value: "서울특별시 강남구 테헤란로" },
+    {
+      icon: <Mail className="w-4 h-4" />,
+      label: "이메일",
+      value: "support@myroutine.com",
+    },
+    {
+      icon: <Phone className="w-4 h-4" />,
+      label: "전화",
+      value: "02-1234-5678 (평일 10-18시)",
+    },
+    {
+      icon: <MapPin className="w-4 h-4" />,
+      label: "주소",
+      value: "서울특별시 강남구 테헤란로",
+    },
   ]
 
   return (
@@ -59,7 +71,9 @@ export default function ContactPage() {
                   {item.icon}
                   <span className="text-sm font-semibold">{item.label}</span>
                 </div>
-                <p className="text-foreground font-semibold text-sm">{item.value}</p>
+                <p className="text-foreground font-semibold text-sm">
+                  {item.value}
+                </p>
               </Card>
             ))}
           </div>
@@ -68,7 +82,9 @@ export default function ContactPage() {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-bold text-foreground mb-2">문의 카테고리</label>
+                  <label className="block text-sm font-bold text-foreground mb-2">
+                    문의 카테고리
+                  </label>
                   <select
                     value={form.category}
                     onChange={(e) => handleChange("category", e.target.value)}
@@ -79,14 +95,17 @@ export default function ContactPage() {
                       카테고리를 선택하세요
                     </option>
                     <option value="product">상품 문의</option>
-                    <option value="subscription">구독/배송</option>
+                    <option value="subscription">구독</option>
+                    <option value="shipping">배송</option>
                     <option value="payment">결제/환불</option>
                     <option value="account">계정/로그인</option>
                     <option value="etc">기타</option>
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-bold text-foreground mb-2">제목</label>
+                  <label className="block text-sm font-bold text-foreground mb-2">
+                    제목
+                  </label>
                   <Input
                     value={form.title}
                     onChange={(e) => handleChange("title", e.target.value)}
@@ -97,7 +116,9 @@ export default function ContactPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-foreground mb-2">내용</label>
+                <label className="block text-sm font-bold text-foreground mb-2">
+                  내용
+                </label>
                 <textarea
                   value={form.message}
                   onChange={(e) => handleChange("message", e.target.value)}
@@ -107,7 +128,11 @@ export default function ContactPage() {
                 />
               </div>
 
-              <Button type="submit" className="w-full h-12" disabled={isSubmitting}>
+              <Button
+                type="submit"
+                className="w-full h-12"
+                disabled={isSubmitting}
+              >
                 {isSubmitting ? "전송 중..." : "문의하기"}
               </Button>
             </form>

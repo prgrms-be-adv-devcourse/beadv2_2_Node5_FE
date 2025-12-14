@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
-import { orderApi, OrderType } from "@/lib/api-client"
+import { orderApi, OrderType } from "@/lib/api/order"
 // import {
 //   cartApi,
 //   productApi,

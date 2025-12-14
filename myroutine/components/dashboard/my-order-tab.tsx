@@ -9,7 +9,7 @@ import {
   orderApi,
   type OrderListDetailInfo,
   OrderStatus,
-} from "@/lib/api-client"
+} from "@/lib/api/order"
 
 type OrderCard = {
   id: string

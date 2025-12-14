@@ -7,12 +7,8 @@ import { Card } from "@/components/ui/card"
 import SubscriptionForm from "@/components/subscription-form"
 import Link from "next/link"
 import { useParams } from "next/navigation"
-import {
-  orderApi,
-  OrderType,
-  type ProductInfoResponse,
-  productApi,
-} from "@/lib/api-client"
+import { orderApi, OrderType } from "@/lib/api/order"
+import { type ProductInfoResponse, productApi } from "@/lib/api/product"
 import { getCategoryLabel } from "@/lib/categories"
 import { Input } from "@/components/ui/input"
 // import { cartApi } from "@/lib/api-client"

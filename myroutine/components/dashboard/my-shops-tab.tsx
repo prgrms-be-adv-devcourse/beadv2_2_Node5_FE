@@ -7,13 +7,13 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
 import { Plus } from "lucide-react"
+import { type PageResponse } from "@/lib/api-client"
 import {
   shopApi,
-  type PageResponse,
   type ShopListResponse,
   type ShopRegisterRequest,
   type ShopRegisterResponse,
-} from "@/lib/api-client"
+} from "@/lib/api/shop"
 import { persistAuthPayload } from "@/lib/api/auth"
 import Link from "next/link"
 

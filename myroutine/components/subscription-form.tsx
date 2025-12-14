@@ -10,10 +10,12 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import {
   DAY_OF_WEEK_OPTIONS,
   type DayOfWeek,
-  type ProductInfoResponse,
-  type RecurrenceType,
-  subscriptionApi,
 } from "@/lib/api-client"
+import {
+  subscriptionApi,
+  type RecurrenceType,
+} from "@/lib/api/subscription"
+import type { ProductInfoResponse } from "@/lib/api/product"
 import type React from "react"
 
 interface SubscriptionFormProps {

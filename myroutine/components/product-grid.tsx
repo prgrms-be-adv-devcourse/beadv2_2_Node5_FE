@@ -4,13 +4,13 @@ import { useState, useEffect } from "react"
 import ProductCard from "@/components/product-card"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { type PageResponse } from "@/lib/api-client"
 import {
   productApi,
-  type PageResponse,
   type ProductInfoResponse,
   type ProductSearchResponse,
   searchApi,
-} from "@/lib/api-client"
+} from "@/lib/api/product"
 import { CATEGORY_OPTIONS, getCategoryLabel } from "@/lib/categories"
 
 interface ProductGridProps {

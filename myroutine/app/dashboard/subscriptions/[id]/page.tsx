@@ -17,9 +17,8 @@ import {
 import {
   DAY_OF_WEEK_OPTIONS,
   formatDaysOfWeek,
-  subscriptionApi,
-  type SubscriptionInfo,
 } from "@/lib/api-client"
+import { subscriptionApi, type SubscriptionInfo } from "@/lib/api/subscription"
 
 type ActionType = "pause" | "resume" | "cancel"
 
