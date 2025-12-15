@@ -54,7 +54,7 @@ export default function ProductDetailPage() {
     const cartItem = {
       productId: product.id?.toString() || id,
       name: product.name,
-      price: product.price,
+      price: productPrice,
       quantity,
       thumbnailUrl: product.thumbnailUrl,
     }
@@ -89,13 +89,13 @@ export default function ProductDetailPage() {
       setError(null)
       try {
         const data = await productApi.getProductDetail(id)
-        const normalized: ProductInfoResponse = {
+        setProduct({
           ...mockProduct,
           ...data,
-          id: data.id?.toString() || id,
-          thumbnailUrl: data.thumbnailUrl || mockProduct.thumbnailUrl,
-        }
-        setProduct(normalized)
+          id: data.id ?? id ?? mockProduct.id,
+          price: data.price ?? mockProduct.price,
+          thumbnailUrl: data.thumbnailUrl ?? mockProduct.thumbnailUrl,
+        })
       } catch (err: any) {
         setError(
           err?.message ||
@@ -110,6 +110,12 @@ export default function ProductDetailPage() {
     fetchProduct()
   }, [id])
 
+  const toNumber = (value: number | string | undefined) => {
+    const num = typeof value === "string" ? Number(value) : value ?? 0
+    return Number.isFinite(num) ? num : 0
+  }
+
+  const productPrice = toNumber(product.price)
   const displayPrice = (price: number) => `₩${price.toLocaleString()}`
   const getMemberId = () =>
     (typeof window !== "undefined" && localStorage.getItem("memberId")) ||
@@ -134,9 +140,9 @@ export default function ProductDetailPage() {
             productId: product.id?.toString() || id,
             name: product.name,
             imgUrl: product.thumbnailUrl,
-            unitPrice: product.price,
+            unitPrice: productPrice,
             quantity,
-            totalPrice: product.price * quantity,
+            totalPrice: productPrice * quantity,
           },
         ],
       })
@@ -183,7 +189,7 @@ export default function ProductDetailPage() {
 
             <div className="mb-2">
               <p className="text-4xl font-bold text-primary">
-                {displayPrice(product.price)}
+                {displayPrice(productPrice)}
               </p>
             </div>
 

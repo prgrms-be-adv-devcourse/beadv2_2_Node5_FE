@@ -1,7 +1,7 @@
 import { apiClient, type PageResponse } from "../api-client"
 
 export interface PaymentInfo {
-  walletId: string
+  memberId: string
   paymentKey: string
   orderId: string
   amount: number

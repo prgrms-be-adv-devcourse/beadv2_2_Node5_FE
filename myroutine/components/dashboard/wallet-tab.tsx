@@ -452,7 +452,7 @@ export default function WalletTab() {
                 <div className="space-y-3">
                   {payments.map((pay) => (
                     <div
-                      key={pay.paymentKey || pay.orderId || pay.walletId}
+                      key={pay.paymentKey || pay.orderId || pay.memberId}
                       className="flex items-center justify-between p-4 rounded-lg border border-border"
                     >
                       <div className="space-y-1">

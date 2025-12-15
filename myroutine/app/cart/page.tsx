@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
+import { cartApi, type CartItemInfo } from "@/lib/api/cart"
 import { orderApi, OrderType } from "@/lib/api/order"
 // import {
 //   cartApi,
@@ -16,6 +17,7 @@ import { orderApi, OrderType } from "@/lib/api/order"
 // } from "@/lib/api-client"
 
 type CartItem = {
+  id?: string
   productId: string
   name: string
   price: number
@@ -25,11 +27,36 @@ type CartItem = {
 
 const CART_STORAGE_KEY = "mockCart"
 
+const normalizeCartItem = (item: Partial<CartItemInfo> | any): CartItem | null => {
+  const productId = item?.productId ?? item?.id ?? item?.product?.id
+  if (!productId) return null
+
+  const rawPrice = item?.price ?? item?.product?.price ?? 0
+  const price =
+    typeof rawPrice === "string"
+      ? Number(rawPrice)
+      : Number.isFinite(rawPrice)
+        ? (rawPrice as number)
+        : 0
+
+  return {
+    id: item?.id,
+    productId,
+    name: item?.name ?? item?.product?.name ?? "",
+    price: Number.isFinite(price) ? price : 0,
+    quantity: item?.quantity ?? 1,
+    thumbnailUrl:
+      item?.thumbnailUrl ?? item?.imgUrl ?? item?.product?.thumbnailUrl ?? undefined,
+  }
+}
+
 export default function CartPage() {
   const [items, setItems] = useState<CartItem[]>([])
   const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [isInitialized, setIsInitialized] = useState(false)
   const [isOrdering, setIsOrdering] = useState(false)
+  const [useServerCart, setUseServerCart] = useState(false)
+  const [cartError, setCartError] = useState<string | null>(null)
   const [orderError, setOrderError] = useState<string | null>(null)
   const [showOrderModal, setShowOrderModal] = useState(false)
   const [recipientName, setRecipientName] = useState("")
@@ -79,28 +106,56 @@ export default function CartPage() {
     // fetchCart()
 
     if (typeof window === "undefined") return
-    try {
+
+    let cancelled = false
+
+    const hydrateFromStorage = () => {
+      setUseServerCart(false)
       const stored = localStorage.getItem(CART_STORAGE_KEY)
-      if (!stored) return
-      const parsed = JSON.parse(stored)
-      if (Array.isArray(parsed)) {
-        const normalized = parsed
-          .map((item: any) => ({
-            productId:
-              (item && (item.productId || item.id || item.product?.id)) ?? "",
-            name: item?.name ?? item?.product?.name ?? "",
-            price: item?.price ?? item?.product?.price ?? 0,
-            quantity: item?.quantity ?? 1,
-            thumbnailUrl:
-              item?.thumbnailUrl || item?.product?.thumbnailUrl || undefined,
-          }))
-          .filter((item) => !!item.productId)
-        setItems(normalized)
+      if (!stored) {
+        setItems([])
+        return
       }
-    } catch {
-      setItems([])
-    } finally {
-      setIsInitialized(true)
+      try {
+        const parsed = JSON.parse(stored)
+        if (Array.isArray(parsed)) {
+          const normalized = parsed
+            .map((item) => normalizeCartItem(item))
+            .filter(Boolean) as CartItem[]
+          setItems(normalized)
+        }
+      } catch {
+        setItems([])
+      }
+    }
+
+    const fetchCart = async () => {
+      try {
+        const cart = await cartApi.getCart()
+        const list = Array.isArray(cart?.content) ? cart.content : []
+        const normalized = list
+          .map((item) => normalizeCartItem(item))
+          .filter(Boolean) as CartItem[]
+
+        if (!cancelled) {
+          setItems(normalized)
+          setUseServerCart(true)
+          setIsInitialized(true)
+          setCartError(null)
+        }
+      } catch (error) {
+        console.error("장바구니 불러오기 실패", error)
+        if (!cancelled) {
+          hydrateFromStorage()
+          setIsInitialized(true)
+        }
+      }
+    }
+
+    fetchCart()
+
+    return () => {
+      cancelled = true
     }
   }, [])
 
@@ -126,8 +181,10 @@ export default function CartPage() {
   const updateQuantity = async (id: string, delta: number) => {
     const target = items.find((item) => item.productId === id)
     if (!target) return
+    setCartError(null)
     const nextQty = Math.max(1, target.quantity + delta)
     if (nextQty === target.quantity) return
+    const prevQty = target.quantity
     setItems((prev) => {
       const updated = prev.map((item) =>
         item.productId === id ? { ...item, quantity: nextQty } : item
@@ -137,10 +194,28 @@ export default function CartPage() {
       }
       return updated
     })
+
+    if (useServerCart && target.id) {
+      try {
+        await cartApi.updateCartItem(target.id, nextQty)
+      } catch (error) {
+        console.error("수량 변경 실패", error)
+        setItems((prev) =>
+          prev.map((item) =>
+            item.productId === id ? { ...item, quantity: prevQty } : item
+          )
+        )
+        setCartError("수량 변경에 실패했어요. 잠시 후 다시 시도해주세요.")
+      }
+    }
   }
 
   const removeSelected = async () => {
     if (selectedIds.length === 0) return
+    setCartError(null)
+    const previousItems = items
+    const previousSelectedIds = selectedIds
+    const targets = items.filter((item) => selectedIds.includes(item.productId))
     setItems((prev) => {
       const updated = prev.filter(
         (item) => !selectedIds.includes(item.productId)
@@ -151,13 +226,42 @@ export default function CartPage() {
       return updated
     })
     setSelectedIds([])
+
+    if (useServerCart) {
+      try {
+        await Promise.all(
+          targets.map((item) =>
+            item.id ? cartApi.removeCartItem(item.id) : Promise.resolve()
+          )
+        )
+      } catch (error) {
+        console.error("선택 삭제 실패", error)
+        setItems(previousItems)
+        setSelectedIds(previousSelectedIds)
+        setCartError("선택한 상품을 삭제하지 못했습니다.")
+      }
+    }
   }
 
   const clearAll = async () => {
+    setCartError(null)
+    const previousItems = items
+    const previousSelectedIds = selectedIds
     setItems([])
     setSelectedIds([])
     if (typeof window !== "undefined") {
       localStorage.removeItem(CART_STORAGE_KEY)
+    }
+
+    if (useServerCart) {
+      try {
+        await cartApi.clearCart()
+      } catch (error) {
+        console.error("장바구니 비우기 실패", error)
+        setItems(previousItems)
+        setSelectedIds(previousSelectedIds)
+        setCartError("장바구니를 비우지 못했습니다.")
+      }
     }
   }
 
@@ -235,6 +339,12 @@ export default function CartPage() {
             쇼핑 계속하기
           </Link>
         </div>
+
+        {cartError && (
+          <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+            {cartError}
+          </div>
+        )}
 
         {items.length === 0 ? (
           <Card className="p-10 text-center">

@@ -160,8 +160,7 @@ export default function ShopDetailPage() {
 
       const imageUrl = presigned.key || presigned.url.split("?")[0] || ""
 
-      await productApi.createProduct({
-        shopId: shop.id,
+      await productApi.createProduct(shop.id, {
         name: createForm.name.trim(),
         description: createForm.description.trim() || " ",
         price: Number(createForm.price),

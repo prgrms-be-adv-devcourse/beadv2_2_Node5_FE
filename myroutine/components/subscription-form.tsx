@@ -32,6 +32,10 @@ export default function SubscriptionForm({ product, onClose }: SubscriptionFormP
   const [quantity, setQuantity] = useState(1)
   const [address, setAddress] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const price =
+    typeof product.price === "string"
+      ? Number(product.price)
+      : product.price || 0
 
   const handleDayOfWeekToggle = (day: DayOfWeek) => {
     setSelectedDaysOfWeek((prev) => (prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day]))
@@ -88,7 +92,9 @@ export default function SubscriptionForm({ product, onClose }: SubscriptionFormP
             <div className="pb-6 border-b border-border">
               <p className="text-sm text-muted-foreground">상품</p>
               <p className="text-lg font-bold text-foreground">{product.name}</p>
-              <p className="text-xl font-bold text-primary mt-2">₩{product.price.toLocaleString()}</p>
+              <p className="text-xl font-bold text-primary mt-2">
+                ₩{Number.isFinite(price) ? price.toLocaleString() : 0}
+              </p>
             </div>
 
             {/* Recurrence Type */}
@@ -199,7 +205,9 @@ export default function SubscriptionForm({ product, onClose }: SubscriptionFormP
             <div className="bg-primary/10 p-4 rounded-lg">
               <div className="flex items-center justify-between">
                 <span className="text-foreground font-bold">예상 총 비용</span>
-                <span className="text-2xl font-bold text-primary">₩{(product.price * quantity).toLocaleString()}</span>
+                <span className="text-2xl font-bold text-primary">
+                  ₩{Number.isFinite(price * quantity) ? (price * quantity).toLocaleString() : 0}
+                </span>
               </div>
               <p className="text-xs text-muted-foreground mt-2">{recurrenceType === "WEEKLY" ? "주간" : "월간"} 기준</p>
             </div>

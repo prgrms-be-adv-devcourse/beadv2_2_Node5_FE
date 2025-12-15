@@ -2,8 +2,10 @@ import { apiClient, type PageResponse } from "../api-client"
 
 export interface CartItemInfo {
   id: string
-  memberId: string
   productId: string
+  thumbnailUrl: string // 상품 이미지
+  name: string // 상품 이름
+  price: string // 상품 가격
   quantity: number
   createdAt: string
   modifiedAt: string

@@ -81,6 +81,7 @@ class ApiClient {
 
       return data.accessToken
     } catch (err) {
+      console.error(err)
       return null
     } finally {
       this.isRefreshing = false

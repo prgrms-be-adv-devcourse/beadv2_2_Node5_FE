@@ -175,12 +175,23 @@ export default function ProductGrid({
         const list = extractProducts(data)
         const normalized = list.map((item, idx) => {
           const id = "id" in item ? item.id : item.productId
+          const rawPrice = item.price
+          const price =
+            typeof rawPrice === "string"
+              ? Number(rawPrice)
+              : Number.isFinite(rawPrice)
+                ? (rawPrice as number)
+                : 0
+
           return {
             id: id?.toString() || String(idx),
             name: item.name || "이름 없음",
-            category: getCategoryLabel(item.category),
-            price: item.price ?? 0,
-            image: item.thumbnailUrl || "/placeholder.svg",
+            category: getCategoryLabel(item.category || ""),
+            price: Number.isFinite(price) ? price : 0,
+            image:
+              item.thumbnailUrl ||
+              (item as any)?.productImage ||
+              "/placeholder.svg",
             status: item.status || "ON_SALE",
           }
         })
