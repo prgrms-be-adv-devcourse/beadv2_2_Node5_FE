@@ -279,10 +279,6 @@ export default function CartPage() {
     )
   }, [items])
 
-  const getMemberId = () =>
-    (typeof window !== "undefined" && localStorage.getItem("memberId")) ||
-    "mock-member-id"
-
   const handleCheckout = async () => {
     if (!recipientName.trim() || !recipientAddress.trim()) {
       setOrderError("수령인 이름과 주소를 입력해주세요.")
@@ -303,10 +299,9 @@ export default function CartPage() {
     setOrderError(null)
     try {
       const res = await orderApi.createOrder({
-        memberId: getMemberId(),
         orderType: OrderType.NORMAL,
         recipientName: recipientName.trim(),
-        recipientAddress: recipientAddress.trim() as any,
+        recipientAddress: recipientAddress.trim(),
         items: targetItems.map((item) => ({
           productId: item.productId,
           name: item.name,

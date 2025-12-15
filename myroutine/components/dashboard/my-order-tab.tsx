@@ -23,7 +23,6 @@ type OrderCard = {
 }
 
 const PAGE_SIZE = 5
-const MOCK_MEMBER_ID = "mock-member-id"
 const MOCK_ORDER: OrderCard = {
   id: "mock-order-1",
   productName: "프리미엄 샐러드 구독",
@@ -68,34 +67,17 @@ const formatDate = (value: string) => {
 export default function OrdersTab() {
   const router = useRouter()
   const [orders, setOrders] = useState<OrderCard[]>([])
-  const [memberId, setMemberId] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
-  const [isMemberLoading, setIsMemberLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [page, setPage] = useState(0)
   const [totalPages, setTotalPages] = useState(1)
 
   useEffect(() => {
-    setIsMemberLoading(true)
-    setError(null)
-    const storedId =
-      typeof window !== "undefined" ? localStorage.getItem("memberId") : null
-    if (storedId) {
-      setMemberId(storedId)
-    } else {
-      setMemberId(MOCK_MEMBER_ID)
-    }
-    setIsMemberLoading(false)
-  }, [])
-
-  useEffect(() => {
-    if (!memberId) return
-
     const fetchOrders = async () => {
       setIsLoading(true)
       setError(null)
       try {
-        const data = await orderApi.getOrderList(memberId, page, PAGE_SIZE, "3")
+        const data = await orderApi.getOrderList(page, PAGE_SIZE, "3")
         const normalized =
           data?.orderList?.map((order, idx) => toOrderCard(order, idx)) || []
         const nextOrders = normalized.length > 0 ? normalized : [MOCK_ORDER]
@@ -115,19 +97,11 @@ export default function OrdersTab() {
     }
 
     fetchOrders()
-  }, [memberId, page])
+  }, [page])
 
   const isEmpty = !isLoading && orders.length === 0
   const handleDetail = (orderId: string) => {
     router.push(`/orders/${orderId}`)
-  }
-
-  if (isMemberLoading) {
-    return (
-      <Card className="p-6 text-muted-foreground">
-        회원 정보를 불러오는 중입니다...
-      </Card>
-    )
   }
 
   return (

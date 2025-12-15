@@ -1,11 +1,10 @@
 import { apiClient, PageInfoDto } from "../api-client"
 
 export interface OrderCreateRequest {
-  memberId: string
   orderType: OrderType
   subscriptionId?: string
   recipientName?: string
-  recipientAddress?: number
+  recipientAddress?: string
   items: OrderItemRequest[]
 }
 
@@ -93,27 +92,18 @@ export interface OrderStatusInfo {
 export const orderApi = {
   createOrder: (data: OrderCreateRequest) =>
     apiClient.post<OrderCreateInfo>("/order-service/api/v1/orders", data),
-  getOrderList: (
-    memberId: string,
-    page = 0,
-    size = 5,
-    period: "3" | "6" | "12" = "3"
-  ) =>
+  getOrderList: (page = 0, size = 5, period: "3" | "6" | "12" = "3") =>
     apiClient.get<OrderListInfo>("/order-service/api/v1/orders", {
-      params: { memberId, page, size, period },
+      params: { page, size, period },
     }),
   getOrderDetail: (orderId: string) =>
     apiClient.get<OrderDetailInfo>(`/order-service/api/v1/orders/${orderId}`),
-  cancelOrder: (orderId: string, memberId: string) =>
+  cancelOrder: (orderId: string) =>
     apiClient.patch<OrderStatusInfo>(
-      `/order-service/api/v1/orders/${orderId}/cancel`,
-      undefined,
-      { params: { memberId } }
+      `/order-service/api/v1/orders/${orderId}/cancel`
     ),
-  refundOrder: (orderId: string, memberId: string) =>
+  refundOrder: (orderId: string) =>
     apiClient.patch<OrderStatusInfo>(
-      `/order-service/api/v1/orders/${orderId}/refund`,
-      undefined,
-      { params: { memberId } }
+      `/order-service/api/v1/orders/${orderId}/refund`
     ),
 }

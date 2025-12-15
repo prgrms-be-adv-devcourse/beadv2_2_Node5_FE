@@ -102,10 +102,6 @@ export default function OrderDetailPage() {
   }
 
   const orderedItems = order?.orderedItems || []
-  const memberId =
-    typeof window !== "undefined"
-      ? localStorage.getItem("memberId") || "mock-member-id"
-      : "mock-member-id"
 
   const canCancel = order?.status === OrderStatus.PAID
   const canRefund =
@@ -117,7 +113,7 @@ export default function OrderDetailPage() {
     setIsActionLoading(true)
     setError(null)
     try {
-      const res = await orderApi.cancelOrder(order.orderId, memberId)
+      const res = await orderApi.cancelOrder(order.orderId)
       setOrder((prev) =>
         prev
           ? {
@@ -138,7 +134,7 @@ export default function OrderDetailPage() {
     setIsActionLoading(true)
     setError(null)
     try {
-      const res = await orderApi.refundOrder(order.orderId, memberId)
+      const res = await orderApi.refundOrder(order.orderId)
       setOrder((prev) =>
         prev
           ? {

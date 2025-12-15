@@ -117,10 +117,6 @@ export default function ProductDetailPage() {
 
   const productPrice = toNumber(product.price)
   const displayPrice = (price: number) => `₩${price.toLocaleString()}`
-  const getMemberId = () =>
-    (typeof window !== "undefined" && localStorage.getItem("memberId")) ||
-    "mock-member-id"
-
   const handleOrder = async () => {
     if (!recipientName.trim() || !recipientAddress.trim()) {
       setOrderError("수령인 이름과 주소를 입력해주세요.")
@@ -131,10 +127,9 @@ export default function ProductDetailPage() {
     setOrderError(null)
     try {
       const res = await orderApi.createOrder({
-        memberId: getMemberId(),
         orderType: OrderType.NORMAL,
         recipientName: recipientName.trim(),
-        recipientAddress: recipientAddress.trim() as any,
+        recipientAddress: recipientAddress.trim(),
         items: [
           {
             productId: product.id?.toString() || id,

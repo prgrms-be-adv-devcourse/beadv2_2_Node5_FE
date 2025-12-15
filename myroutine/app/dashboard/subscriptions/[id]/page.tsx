@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/select"
 import {
   DAY_OF_WEEK_OPTIONS,
+  type DayOfWeek,
   formatDaysOfWeek,
 } from "@/lib/api-client"
 import { subscriptionApi, type SubscriptionInfo } from "@/lib/api/subscription"
@@ -72,7 +73,9 @@ export default function SubscriptionDetailPage() {
   const router = useRouter()
   const id = params?.id || ""
 
-  const [subscription, setSubscription] = useState<SubscriptionInfo | null>(null)
+  const [subscription, setSubscription] = useState<SubscriptionInfo | null>(
+    null
+  )
   const [isLoading, setIsLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState<ActionType | null>(null)
   const [isUpdating, setIsUpdating] = useState(false)
@@ -80,8 +83,10 @@ export default function SubscriptionDetailPage() {
   const [error, setError] = useState<string | null>(null)
   const [quantity, setQuantity] = useState(1)
   const [address, setAddress] = useState("")
-  const [recurrenceType, setRecurrenceType] = useState<"WEEKLY" | "MONTHLY">("WEEKLY")
-  const [selectedDays, setSelectedDays] = useState<number[]>([])
+  const [recurrenceType, setRecurrenceType] = useState<"WEEKLY" | "MONTHLY">(
+    "WEEKLY"
+  )
+  const [selectedDays, setSelectedDays] = useState<DayOfWeek[]>([])
   const [selectedDayOfMonth, setSelectedDayOfMonth] = useState<number>(1)
   const [initialDayCount, setInitialDayCount] = useState(0)
 
@@ -154,11 +159,13 @@ export default function SubscriptionDetailPage() {
     }
   }
 
-  const handleToggleDay = (day: number) => {
+  const handleToggleDay = (day: DayOfWeek) => {
     if (!selectedDays.includes(day)) {
       const limit = initialDayCount > 0 ? initialDayCount : undefined
       if (limit && selectedDays.length >= limit) {
-        alert(`선택 가능한 요일 개수는 ${limit}개입니다. 다른 요일을 해제 후 선택하세요.`)
+        alert(
+          `선택 가능한 요일 개수는 ${limit}개입니다. 다른 요일을 해제 후 선택하세요.`
+        )
         return
       }
       setSelectedDays((prev) => [...prev, day])
@@ -181,7 +188,9 @@ export default function SubscriptionDetailPage() {
         return
       }
       if (initialDayCount > 0 && selectedDays.length !== initialDayCount) {
-        alert(`배송 요일은 처음 설정된 ${initialDayCount}개로 유지되어야 합니다.`)
+        alert(
+          `배송 요일은 처음 설정된 ${initialDayCount}개로 유지되어야 합니다.`
+        )
         return
       }
     }
@@ -223,12 +232,15 @@ export default function SubscriptionDetailPage() {
   const displayDays = useMemo(() => {
     if (!subscription) return ""
     if (subscription.recurrenceType === "WEEKLY") {
-      return formatDaysOfWeek(subscription.dayOfWeek || DAY_OF_WEEK_OPTIONS.map((d) => d.id))
+      return formatDaysOfWeek(
+        subscription.dayOfWeek || DAY_OF_WEEK_OPTIONS.map((d) => d.id)
+      )
     }
     return `${subscription.dayOfMonth}일`
   }, [subscription])
 
-  const priceText = (subscription?.totalPrice ??
+  const priceText = (
+    subscription?.totalPrice ??
     (subscription?.pricePerItem || 0) * (subscription?.quantity || 1)
   ).toLocaleString()
 
@@ -246,11 +258,17 @@ export default function SubscriptionDetailPage() {
     return (
       <main className="flex-1">
         <div className="container mx-auto px-4 py-8 space-y-4">
-          <Button variant="ghost" onClick={() => router.back()} className="gap-2">
+          <Button
+            variant="ghost"
+            onClick={() => router.back()}
+            className="gap-2"
+          >
             <ArrowLeft className="w-4 h-4" />
             돌아가기
           </Button>
-          <p className="text-destructive font-semibold">{error || "구독 정보를 찾을 수 없습니다."}</p>
+          <p className="text-destructive font-semibold">
+            {error || "구독 정보를 찾을 수 없습니다."}
+          </p>
         </div>
       </main>
     )
@@ -260,7 +278,11 @@ export default function SubscriptionDetailPage() {
     <main className="flex-1">
       <div className="container mx-auto px-4 py-8 space-y-6">
         <div className="flex items-center gap-3">
-          <Button variant="ghost" onClick={() => router.back()} className="gap-2">
+          <Button
+            variant="ghost"
+            onClick={() => router.back()}
+            className="gap-2"
+          >
             <ArrowLeft className="w-4 h-4" />
             돌아가기
           </Button>
@@ -278,26 +300,35 @@ export default function SubscriptionDetailPage() {
             </div>
 
             <div className="flex-1 space-y-3">
-          <div className="flex items-start justify-between gap-3">
-            <div className="space-y-2">
-              <h2 className="text-2xl font-bold text-foreground">{subscription.productName}</h2>
-              <Badge className={statusInfo?.className || "bg-gray-100 text-gray-800"}>
-                {statusInfo?.label || status}
-              </Badge>
-            </div>
-            <div className="text-right">
-              <p className="text-lg text-muted-foreground">
-                수량 {subscription.quantity}개
-              </p>
-              <p className="text-3xl font-bold text-primary">₩{priceText}</p>
-            </div>
-          </div>
+              <div className="flex items-start justify-between gap-3">
+                <div className="space-y-2">
+                  <h2 className="text-2xl font-bold text-foreground">
+                    {subscription.productName}
+                  </h2>
+                  <Badge
+                    className={
+                      statusInfo?.className || "bg-gray-100 text-gray-800"
+                    }
+                  >
+                    {statusInfo?.label || status}
+                  </Badge>
+                </div>
+                <div className="text-right">
+                  <p className="text-lg text-muted-foreground">
+                    수량 {subscription.quantity}개
+                  </p>
+                  <p className="text-3xl font-bold text-primary">
+                    ₩{priceText}
+                  </p>
+                </div>
+              </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-muted-foreground">
                 <div>
                   <p className="font-bold text-foreground">배송 주기</p>
                   <p>
-                    {subscription.recurrenceType === "WEEKLY" ? "주간" : "월간"} ({displayDays})
+                    {subscription.recurrenceType === "WEEKLY" ? "주간" : "월간"}{" "}
+                    ({displayDays})
                   </p>
                 </div>
                 <div>
@@ -318,49 +349,62 @@ export default function SubscriptionDetailPage() {
 
           <div className="flex flex-wrap gap-3 items-center">
             <div className="flex gap-3 flex-wrap">
-              {status !== "CANCELLED" && status !== "FAILED" && status !== "UNAVAILABLE" && (
-                <>
-                  {status === "ACTIVE" ? (
+              {status !== "CANCELLED" &&
+                status !== "FAILED" &&
+                status !== "UNAVAILABLE" && (
+                  <>
+                    {status === "ACTIVE" ? (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="gap-2"
+                        onClick={() => handleAction("pause")}
+                        disabled={actionLoading !== null}
+                      >
+                        <Pause className="w-4 h-4" />
+                        {actionLoading === "pause"
+                          ? "일시정지 중..."
+                          : "일시정지"}
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="gap-2"
+                        onClick={() => handleAction("resume")}
+                        disabled={actionLoading !== null}
+                      >
+                        <Play className="w-4 h-4" />
+                        {actionLoading === "resume" ? "재개 중..." : "재개"}
+                      </Button>
+                    )}
                     <Button
                       variant="outline"
                       size="sm"
-                      className="gap-2"
-                      onClick={() => handleAction("pause")}
+                      className="gap-2 text-destructive hover:text-destructive"
+                      onClick={() => handleAction("cancel")}
                       disabled={actionLoading !== null}
                     >
-                      <Pause className="w-4 h-4" />
-                      {actionLoading === "pause" ? "일시정지 중..." : "일시정지"}
+                      <Trash2 className="w-4 h-4" />
+                      {actionLoading === "cancel" ? "해지 중..." : "해지"}
                     </Button>
-                  ) : (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="gap-2"
-                      onClick={() => handleAction("resume")}
-                      disabled={actionLoading !== null}
-                    >
-                      <Play className="w-4 h-4" />
-                      {actionLoading === "resume" ? "재개 중..." : "재개"}
-                    </Button>
-                  )}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="gap-2 text-destructive hover:text-destructive"
-                    onClick={() => handleAction("cancel")}
-                    disabled={actionLoading !== null}
-                  >
-                    <Trash2 className="w-4 h-4" />
-                    {actionLoading === "cancel" ? "해지 중..." : "해지"}
-                  </Button>
-                </>
-              )}
-              {(status === "CANCELLED" || status === "FAILED" || status === "UNAVAILABLE") && (
-                <p className="text-muted-foreground">더 이상 조치할 수 없는 구독입니다.</p>
+                  </>
+                )}
+              {(status === "CANCELLED" ||
+                status === "FAILED" ||
+                status === "UNAVAILABLE") && (
+                <p className="text-muted-foreground">
+                  더 이상 조치할 수 없는 구독입니다.
+                </p>
               )}
             </div>
             {!isEditing && (
-              <Button variant="outline" size="sm" onClick={() => setIsEditing(true)} className="ml-auto">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsEditing(true)}
+                className="ml-auto"
+              >
                 구독 정보 수정
               </Button>
             )}
@@ -369,7 +413,9 @@ export default function SubscriptionDetailPage() {
           {isEditing && (
             <div className="border-t border-border pt-6 space-y-6">
               <div className="flex items-center justify-between">
-                <h2 className="text-xl font-bold text-foreground">구독 정보 수정</h2>
+                <h2 className="text-xl font-bold text-foreground">
+                  구독 정보 수정
+                </h2>
                 <div className="flex gap-2">
                   <Button variant="ghost" onClick={() => setIsEditing(false)}>
                     취소
