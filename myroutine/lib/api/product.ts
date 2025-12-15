@@ -57,7 +57,7 @@ export const productApi = {
     apiClient.get<ProductInfoResponse>(
       `/catalog-service/api/v1/products/${id}`
     ),
-  getMyProductList: (
+  getProductListByShop: (
     shopId: string,
     params?: { page?: number; size?: number; sort?: string }
   ) =>

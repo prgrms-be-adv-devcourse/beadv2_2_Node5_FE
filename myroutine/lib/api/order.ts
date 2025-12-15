@@ -1,4 +1,4 @@
-import { apiClient } from "../api-client"
+import { apiClient, PageInfoDto } from "../api-client"
 
 export interface OrderCreateRequest {
   memberId: string
@@ -25,13 +25,6 @@ export enum OrderType {
 
 export interface OrderCreateInfo {
   orderId: string
-}
-
-export interface PageInfoDto {
-  page: number
-  size: number
-  totalElements: number
-  totalPages: number
 }
 
 export enum OrderStatus {

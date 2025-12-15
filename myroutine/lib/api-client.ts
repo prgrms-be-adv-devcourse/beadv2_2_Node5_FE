@@ -6,6 +6,13 @@ export interface ExceptionResponse {
   message: string
 }
 
+export interface PageInfoDto {
+  page: number
+  size: number
+  totalElements: number
+  totalPages: number
+}
+
 export interface PageResponse<T> {
   content: T[]
   pageable: any
