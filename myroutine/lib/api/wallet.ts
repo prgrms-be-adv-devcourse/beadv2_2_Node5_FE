@@ -11,14 +11,19 @@ export interface WalletDepositInfo {
   memberId: string
   settlementId: string
   amount: number
-  createdAt: string
 }
 
 export interface WalletWithdrawInfo {
   id: string
   memberId: string
+  orderId: string
   amount: number
-  createdAt: string
+  state: WalletWithdrawLogState
+}
+
+export enum WalletWithdrawLogState {
+  PAID = "PAID",
+  REFUNDED = "REFUNDED",
 }
 
 export const walletApi = {

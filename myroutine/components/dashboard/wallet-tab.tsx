@@ -17,8 +17,9 @@ interface Transaction {
   type: "deposit" | "withdraw"
   amount: number
   description: string
-  date: string
+  date?: string
   status?: string
+  reference?: string
 }
 
 type TransactionFilter = "all" | "use" | "charge"
@@ -51,33 +52,37 @@ export default function WalletTab() {
   >(null)
 
   const mergeTransactions = (
-    deposits: WalletDepositInfo[],
-    withdraws: WalletWithdrawInfo[]
+    deposits: Array<WalletDepositInfo & { createdAt?: string }>,
+    withdraws: Array<WalletWithdrawInfo & { createdAt?: string }>
   ): Transaction[] => {
     const depositTransactions: Transaction[] = deposits.map((item) => ({
       id: `deposit-${item.id}`,
       type: "deposit",
       amount: item.amount,
       description: item.settlementId ? `정산 ${item.settlementId}` : "입금",
-      date: item.createdAt || new Date().toISOString(),
+      date: item.createdAt,
+      reference: item.settlementId,
     }))
 
     const withdrawTransactions: Transaction[] = withdraws.map((item) => ({
       id: `withdraw-${item.id}`,
       type: "withdraw",
       amount: item.amount,
-      description: "출금/결제",
-      date: item.createdAt || new Date().toISOString(),
+      description: "결제",
+      date: item.createdAt,
+      status: item.state,
+      reference: item.orderId,
     }))
 
     return [...depositTransactions, ...withdrawTransactions].sort((a, b) => {
-      const dateA = new Date(a.date).getTime()
-      const dateB = new Date(b.date).getTime()
+      const dateA = a.date ? new Date(a.date).getTime() : 0
+      const dateB = b.date ? new Date(b.date).getTime() : 0
       return dateB - dateA
     })
   }
 
-  const formatDate = (date: string) => {
+  const formatDate = (date?: string) => {
+    if (!date) return "-"
     const parsed = new Date(date)
     if (Number.isNaN(parsed.getTime())) return date
     return parsed.toISOString().slice(0, 10)
@@ -87,6 +92,10 @@ export default function WalletTab() {
     const normalized = status?.toLowerCase() || ""
     if (normalized.includes("confirm") || normalized.includes("success"))
       return "bg-green-100 text-green-700 border-green-200"
+    if (normalized.includes("paid"))
+      return "bg-green-100 text-green-700 border-green-200"
+    if (normalized.includes("refund"))
+      return "bg-amber-100 text-amber-700 border-amber-200"
     if (normalized.includes("cancel"))
       return "bg-amber-100 text-amber-700 border-amber-200"
     if (normalized.includes("fail"))
@@ -337,55 +346,72 @@ export default function WalletTab() {
           </p>
         ) : (
           <div className="space-y-3">
-            {transactions.map((tx) => (
-              <div
-                key={tx.id}
-                className="flex items-center justify-between p-4 rounded-lg border border-border hover:bg-muted/50 transition"
-              >
-                <div className="flex items-center gap-4">
-                  <div
-                    className={`p-2 rounded-full ${
-                      tx.type === "deposit"
-                        ? "bg-green-100 text-green-600"
-                        : "bg-red-100 text-red-600"
-                    }`}
-                  >
-                    {tx.type === "deposit" ? (
-                      <ArrowDown className="w-5 h-5" />
-                    ) : (
-                      <ArrowUp className="w-5 h-5" />
-                    )}
-                  </div>
-                  <div>
-                    <p className="font-bold text-foreground">
-                      {tx.description}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      {formatDate(tx.date)}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  {tx.status && (
-                    <span
-                      className={`px-2 py-1 rounded-full text-xs font-semibold border ${getPaymentStatusBadge(
-                        tx.status
-                      )}`}
+            {transactions.map((tx) => {
+              const isRefunded =
+                tx.status?.toLowerCase().includes("refund") ?? false
+              return (
+                <div
+                  key={tx.id}
+                  className="flex items-center justify-between p-4 rounded-lg border border-border hover:bg-muted/50 transition"
+                >
+                  <div className="flex items-center gap-4">
+                    <div
+                      className={`p-2 rounded-full ${
+                        tx.type === "deposit"
+                          ? "bg-green-100 text-green-600"
+                          : "bg-red-100 text-red-600"
+                      }`}
                     >
-                      {tx.status}
-                    </span>
-                  )}
-                  <p
-                    className={`font-bold text-lg ${
-                      tx.type === "deposit" ? "text-green-600" : "text-red-600"
-                    }`}
-                  >
-                    {tx.type === "deposit" ? "+" : "-"}₩
-                    {tx.amount.toLocaleString()}
-                  </p>
+                      {tx.type === "deposit" ? (
+                        <ArrowDown className="w-5 h-5" />
+                      ) : (
+                        <ArrowUp className="w-5 h-5" />
+                      )}
+                    </div>
+                    <div>
+                      <p
+                        className={`font-bold text-foreground ${
+                          isRefunded ? "line-through text-muted-foreground" : ""
+                        }`}
+                      >
+                        {tx.description}
+                      </p>
+                      <p className="text-sm text-muted-foreground flex gap-2 flex-wrap">
+                        <span>{formatDate(tx.date)}</span>
+                        {tx.reference && (
+                          <span className="text-xs bg-muted px-2 py-1 rounded-full border">
+                            {tx.reference}
+                          </span>
+                        )}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    {tx.status && (
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-semibold border ${getPaymentStatusBadge(
+                          tx.status
+                        )}`}
+                      >
+                        {tx.status}
+                      </span>
+                    )}
+                    <p
+                      className={`font-bold text-lg ${
+                        isRefunded
+                          ? "text-muted-foreground line-through"
+                          : tx.type === "deposit"
+                          ? "text-green-600"
+                          : "text-red-600"
+                      }`}
+                    >
+                      {tx.type === "deposit" ? "+" : "-"}₩
+                      {tx.amount.toLocaleString()}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            ))}
+              )
+            })}
             <div className="flex items-center justify-center gap-4 pt-4">
               <Button
                 variant="outline"
