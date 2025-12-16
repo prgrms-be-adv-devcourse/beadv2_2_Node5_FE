@@ -12,6 +12,7 @@ import { type ProductInfoResponse, productApi } from "@/lib/api/product"
 import { getCategoryLabel } from "@/lib/categories"
 import { Input } from "@/components/ui/input"
 import { cartApi } from "@/lib/api/cart"
+import { getImageUrl } from "@/lib/image"
 
 export default function ProductDetailPage() {
   const routeParams = useParams<{ id: string }>()
@@ -49,7 +50,8 @@ export default function ProductDetailPage() {
           ...data,
           id: data.id ?? id,
           price: data.price ?? 0,
-          thumbnailUrl: data.thumbnailUrl ?? "/placeholder.svg",
+          thumbnailUrl:
+            getImageUrl(data.thumbnailUrl) ?? "/placeholder.svg",
         })
       } catch (err: any) {
         setError(err?.message || "상품 정보를 불러오지 못했습니다.")
@@ -148,7 +150,7 @@ export default function ProductDetailPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           <div className="flex items-center justify-center bg-muted rounded-lg h-80 lg:h-[480px] lg:sticky lg:top-24">
             <img
-              src={product.thumbnailUrl || "/placeholder.svg"}
+              src={getImageUrl(product.thumbnailUrl) || "/placeholder.svg"}
               alt={product.name}
               className="w-full h-full object-cover rounded-lg"
             />

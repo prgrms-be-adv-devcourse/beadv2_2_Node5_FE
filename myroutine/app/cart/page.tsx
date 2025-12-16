@@ -9,6 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { cartApi, type CartItemInfo } from "@/lib/api/cart"
 import { orderApi, OrderType } from "@/lib/api/order"
+import { getImageUrl } from "@/lib/image"
 // import {
 //   cartApi,
 //   productApi,
@@ -44,7 +45,10 @@ const normalizeCartItem = (item: Partial<CartItemInfo> | any): CartItem | null =
     price: Number.isFinite(price) ? price : 0,
     quantity: item?.quantity ?? 1,
     thumbnailUrl:
-      item?.thumbnailUrl ?? item?.imgUrl ?? item?.product?.thumbnailUrl ?? undefined,
+      getImageUrl(item?.thumbnailUrl) ??
+      getImageUrl(item?.imgUrl) ??
+      getImageUrl(item?.product?.thumbnailUrl) ??
+      undefined,
   }
 }
 
@@ -317,7 +321,7 @@ export default function CartPage() {
                     />
                     <div className="w-20 h-20 bg-muted rounded-lg overflow-hidden">
                       <img
-                        src={item.thumbnailUrl || "/placeholder.svg"}
+                        src={getImageUrl(item.thumbnailUrl) || "/placeholder.svg"}
                         alt={productName}
                         className="w-full h-full object-cover"
                       />

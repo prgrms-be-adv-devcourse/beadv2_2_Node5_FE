@@ -12,6 +12,7 @@ import {
   searchApi,
 } from "@/lib/api/product"
 import { CATEGORY_OPTIONS, getCategoryLabel } from "@/lib/categories"
+import { getImageUrl } from "@/lib/image"
 
 interface ProductGridProps {
   searchQuery: string
@@ -119,8 +120,8 @@ export default function ProductGrid({
             category: getCategoryLabel(item.category || ""),
             price: Number.isFinite(price) ? price : 0,
             image:
-              item.thumbnailUrl ||
-              (item as any)?.productImage ||
+              getImageUrl(item.thumbnailUrl) ||
+              getImageUrl((item as any)?.productImage) ||
               "/placeholder.svg",
             status: item.status || "ON_SALE",
           }

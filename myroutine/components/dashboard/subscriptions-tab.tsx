@@ -8,6 +8,7 @@ import {
 } from "@/lib/api-client"
 import { subscriptionApi, type SubscriptionInfo } from "@/lib/api/subscription"
 import Link from "next/link"
+import { getImageUrl } from "@/lib/image"
 
 type SubscriptionItem = Partial<
   Pick<
@@ -97,7 +98,11 @@ export default function SubscriptionsTab() {
               {/* Product Image */}
               <div className="flex-shrink-0">
                 <img
-                  src={sub.thumbnailUrl || sub.productImage || "/placeholder.svg"}
+                  src={
+                    getImageUrl(sub.thumbnailUrl) ||
+                    getImageUrl(sub.productImage) ||
+                    "/placeholder.svg"
+                  }
                   alt={sub.productName}
                   className="w-24 h-24 md:w-32 md:h-32 object-cover rounded-lg"
                 />

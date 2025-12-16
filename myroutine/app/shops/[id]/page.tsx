@@ -202,6 +202,10 @@ export default function ShopDetailPage() {
       })
 
       if (!uploadResponse.ok) {
+        console.error("상품 이미지 업로드 실패", {
+          status: uploadResponse.status,
+          statusText: uploadResponse.statusText,
+        })
         throw new Error("이미지 업로드에 실패했습니다.")
       }
 
@@ -229,6 +233,8 @@ export default function ShopDetailPage() {
       setThumbnailFile(null)
       loadShopProducts()
     } catch (err: any) {
+      // S3 CORS 등으로 서버에 요청이 닿지 않는 경우도 콘솔에 남겨 추적
+      console.error("상품 등록 실패", err)
       setCreateError(err?.message || "상품 등록에 실패했습니다.")
     } finally {
       setIsCreatingProduct(false)
