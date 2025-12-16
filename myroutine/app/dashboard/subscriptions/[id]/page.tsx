@@ -20,6 +20,7 @@ import {
   formatDaysOfWeek,
 } from "@/lib/api-client"
 import { subscriptionApi, type SubscriptionInfo } from "@/lib/api/subscription"
+import { getImageUrl } from "@/lib/image"
 
 type ActionType = "pause" | "resume" | "cancel"
 
@@ -263,7 +264,7 @@ export default function SubscriptionDetailPage() {
           <div className="flex flex-col md:flex-row gap-6">
             <div className="flex-shrink-0">
               <img
-                src={subscription.thumbnailUrl || "/placeholder.svg"}
+                src={getImageUrl(subscription.thumbnailUrl) || "/placeholder.svg"}
                 alt={subscription.productName}
                 className="w-32 h-32 md:w-40 md:h-40 object-cover rounded-lg"
               />

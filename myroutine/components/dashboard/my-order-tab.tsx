@@ -10,6 +10,7 @@ import {
   type OrderListDetailInfo,
   OrderStatus,
 } from "@/lib/api/order"
+import { getImageUrl } from "@/lib/image"
 
 type OrderCard = {
   id: string
@@ -36,7 +37,8 @@ const toOrderCard = (
   return {
     id: order.orderId || order.orderNum || String(fallbackIndex),
     productName: firstItem?.productName || "상품명 없음",
-    productImage: firstItem?.imgUrl || "/placeholder.svg",
+    productImage:
+      getImageUrl(firstItem?.imgUrl) || "/placeholder.svg",
     totalPrice:
       typeof order.totalAmount === "number"
         ? order.totalAmount

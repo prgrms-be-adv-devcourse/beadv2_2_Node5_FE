@@ -9,6 +9,7 @@ import {
   productApi,
   type ProductInfoResponse,
   type ProductSearchResponse,
+  ProductSearchSort,
   searchApi,
 } from "@/lib/api/product"
 import { CATEGORY_OPTIONS, getCategoryLabel } from "@/lib/categories"
@@ -18,6 +19,7 @@ interface ProductGridProps {
   searchQuery: string
   category?: string | null
   priceRange?: [number, number]
+  sort?: ProductSearchSort
 }
 
 type ProductCardItem = {
@@ -46,6 +48,7 @@ export default function ProductGrid({
   searchQuery,
   category,
   priceRange,
+  sort,
 }: ProductGridProps) {
   const [products, setProducts] = useState<ProductCardItem[]>([])
   const [isLoading, setIsLoading] = useState(false)
@@ -55,15 +58,16 @@ export default function ProductGrid({
     searchQuery: string
     category?: string | null
     priceRange?: [number, number]
-  }>({ searchQuery, category, priceRange })
+    sort?: ProductSearchSort
+  }>({ searchQuery, category, priceRange, sort })
 
   useEffect(() => {
     const handler = setTimeout(() => {
-      setDebouncedFilters({ searchQuery, category, priceRange })
+      setDebouncedFilters({ searchQuery, category, priceRange, sort })
       setPage(0)
     }, 300)
     return () => clearTimeout(handler)
-  }, [searchQuery, category, priceRange])
+  }, [searchQuery, category, priceRange, sort])
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -88,7 +92,7 @@ export default function ProductGrid({
             category: debouncedFilters.category || undefined,
             minPrice,
             maxPrice,
-            sort: "createdAt,desc",
+            sort: debouncedFilters.sort || ProductSearchSort.LATEST,
             page,
             size: 12,
           })

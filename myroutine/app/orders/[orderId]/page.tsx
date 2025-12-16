@@ -10,6 +10,7 @@ import {
   OrderStatus,
   OrderType,
 } from "@/lib/api/order"
+import { getImageUrl } from "@/lib/image"
 
 const formatDate = (value: string) => {
   const parsed = new Date(value)
@@ -168,7 +169,7 @@ export default function OrderDetailPage() {
           {orderedItems.map((item) => (
             <div key={item.productId} className="flex items-center gap-4">
               <img
-                src={item.imgUrl || "/placeholder.svg"}
+                src={getImageUrl(item.imgUrl) || "/placeholder.svg"}
                 alt={item.productName}
                 className="w-16 h-16 rounded-md object-cover"
               />

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { ArrowDown, ArrowUp, Plus } from "lucide-react"
+import { ArrowDown, ArrowUp, Plus, ChevronDown, ChevronUp } from "lucide-react"
 import { paymentApi, type PaymentInfo, PaymentStatus } from "@/lib/api/payment"
 import {
   walletApi,
@@ -487,6 +487,14 @@ export default function WalletTab() {
                             <p className="font-bold text-lg text-primary">
                               +₩{(pay.amount || 0).toLocaleString()}
                             </p>
+                            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                              <span>{isSelected ? "접기" : "더보기"}</span>
+                              {isSelected ? (
+                                <ChevronUp className="w-4 h-4" />
+                              ) : (
+                                <ChevronDown className="w-4 h-4" />
+                              )}
+                            </div>
                           </div>
                         </button>
                         {isSelected && (

@@ -104,6 +104,12 @@ export interface ProductSearchResponse {
   createAt?: string
 }
 
+export enum ProductSearchSort {
+  LATEST = "LATEST",
+  LOW_PRICE = "LOW_PRICE",
+  HIGH_PRICE = "HIGH_PRICE",
+}
+
 export const searchApi = {
   searchProducts: (params: {
     keyword?: string
@@ -111,12 +117,12 @@ export const searchApi = {
     minPrice?: number
     maxPrice?: number
     shopId?: string
-    sort?: string
+    sort?: ProductSearchSort
     page?: number
     size?: number
   }) =>
     apiClient.get<PageResponse<ProductSearchResponse>>(
-      "/catalog-service/api/v1/search",
+      "/catalog-service/api/v1/search/products",
       { params }
     ),
 }
