@@ -228,7 +228,7 @@ export default function ShopDetailPage() {
         description: createForm.description.trim() || " ",
         price: Number(createForm.price),
         stock: Number(createForm.stock) || 0,
-        status: "ON_SALE",
+        status: ProductStatus.ON_SALE,
         category: createForm.category,
         thumbnailUrl: imageUrl || "/placeholder.svg",
       })
