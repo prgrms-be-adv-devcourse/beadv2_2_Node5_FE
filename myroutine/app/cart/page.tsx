@@ -235,6 +235,14 @@ export default function CartPage() {
       })
 
       if (res?.orderId) {
+        // 결제 완료 시 장바구니 비우기
+        try {
+          await cartApi.clearCart()
+          setItems([])
+          setSelectedIds([])
+        } catch (clearErr) {
+          console.error("장바구니 비우기 실패", clearErr)
+        }
         setShowOrderModal(false)
         window.location.href = `/orders/${res.orderId}`
       } else {
