@@ -152,7 +152,7 @@ export default function ProductDetailPage() {
             <img
               src={getImageUrl(product.thumbnailUrl) || "/placeholder.svg"}
               alt={product.name}
-              className="w-full h-full object-cover rounded-lg"
+              className="w-full h-full object-contain rounded-lg"
             />
           </div>
 

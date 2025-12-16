@@ -669,7 +669,7 @@ export default function ShopDetailPage() {
                       <img
                         src={getImageUrl(product.thumbnailUrl) || "/placeholder.svg"}
                         alt={product.name}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-contain bg-white"
                       />
                     </div>
                       <div className="space-y-1">
@@ -709,7 +709,7 @@ export default function ShopDetailPage() {
                   <img
                     src={getImageUrl(productForm.thumbnailUrl) || "/placeholder.svg"}
                     alt={productForm.name}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-contain bg-white"
                   />
                 </div>
                 <p className="text-xs text-muted-foreground">
@@ -1090,7 +1090,7 @@ export default function ShopDetailPage() {
                     <img
                       src={thumbnailPreview}
                       alt="미리보기"
-                      className="w-full max-h-48 object-cover rounded"
+                      className="w-full max-h-48 object-contain rounded bg-white"
                     />
                   </div>
                 )}

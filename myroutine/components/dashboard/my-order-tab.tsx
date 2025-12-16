@@ -85,6 +85,83 @@ const buildMosaicSlots = (images: string[]) => {
   return slots
 }
 
+const renderMosaic = (images: string[], alt: string, orderId: string) => {
+  const count = images.length
+
+  // Single image
+  if (count <= 1) {
+    return (
+      <img
+        src={images[0] || "/placeholder.svg"}
+        alt={alt}
+        className="w-24 h-24 md:w-32 md:h-32 object-contain rounded-lg bg-white"
+      />
+    )
+  }
+
+  // 2-way diagonal split
+  if (count === 2) {
+    const shapes = [
+      "polygon(0 0, 100% 0, 0 100%)", // slash: top + right side
+      "polygon(100% 0, 100% 100%, 0 100%)", // slash: left + bottom side
+    ]
+    return (
+      <div className="relative w-24 h-24 md:w-32 md:h-32 rounded-lg overflow-hidden bg-muted">
+        {[0, 1].map((idx) => (
+          <img
+            key={`${orderId}-diag-${idx}`}
+            src={images[idx] || "/placeholder.svg"}
+            alt={`${alt} 이미지 ${idx + 1}`}
+            className="absolute inset-0 w-full h-full object-contain"
+            style={{ clipPath: shapes[idx] }}
+          />
+        ))}
+      </div>
+    )
+  }
+
+  // 3-way diagonal bands (// 느낌)
+  if (count === 3) {
+    const shapes = [
+      "polygon(0 0, 100% 0, 0 65%)", // 상단 띠
+      "polygon(0 45%, 100% 0, 100% 55%, 0 100%)", // 중앙 대각 띠
+      "polygon(0 100%, 100% 45%, 100% 100%)", // 하단 띠
+    ]
+    return (
+      <div className="relative w-24 h-24 md:w-32 md:h-32 rounded-lg overflow-hidden bg-muted">
+        {shapes.map((shape, idx) => (
+          <img
+            key={`${orderId}-diag3-${idx}`}
+            src={images[idx] || "/placeholder.svg"}
+            alt={`${alt} 이미지 ${idx + 1}`}
+            className="absolute inset-0 w-full h-full object-contain"
+            style={{ clipPath: shape }}
+          />
+        ))}
+      </div>
+    )
+  }
+
+  // 4개 이상: 2x2 모자이크
+  return (
+    <div className="grid grid-cols-2 grid-rows-2 gap-1 w-24 h-24 md:w-32 md:h-32 rounded-lg overflow-hidden bg-muted">
+      {buildMosaicSlots(images).map((img, slot) => (
+        <div key={`${orderId}-img-${slot}`} className="w-full h-full bg-muted">
+          {img ? (
+            <img
+              src={img}
+              alt={`${alt} 이미지 ${slot + 1}`}
+              className="w-full h-full object-contain bg-white"
+            />
+          ) : (
+            <div className="w-full h-full bg-muted" />
+          )}
+        </div>
+      ))}
+    </div>
+  )
+}
+
 export default function OrdersTab() {
   const router = useRouter()
   const [orders, setOrders] = useState<OrderCard[]>([])
@@ -150,33 +227,10 @@ export default function OrdersTab() {
             >
               <div className="flex flex-col md:flex-row gap-6">
                 <div className="flex-shrink-0">
-                  {order.productImages.length <= 1 ? (
-                    <img
-                      src={order.productImage || "/placeholder.svg"}
-                      alt={order.productName}
-                      className="w-24 h-24 md:w-32 md:h-32 object-cover rounded-lg"
-                    />
-                  ) : (
-                    <div className="grid grid-cols-2 grid-rows-2 gap-1 w-24 h-24 md:w-32 md:h-32 rounded-lg overflow-hidden bg-muted">
-                      {buildMosaicSlots(order.productImages).map(
-                        (img, slot) => (
-                          <div
-                            key={`${order.id}-img-${slot}`}
-                            className="w-full h-full bg-muted"
-                          >
-                            {img ? (
-                              <img
-                                src={img}
-                                alt={`${order.productName} 이미지 ${slot + 1}`}
-                                className="w-full h-full object-cover"
-                              />
-                            ) : (
-                              <div className="w-full h-full bg-muted" />
-                            )}
-                          </div>
-                        )
-                      )}
-                    </div>
+                  {renderMosaic(
+                    order.productImages,
+                    order.productName,
+                    order.id
                   )}
                 </div>
 

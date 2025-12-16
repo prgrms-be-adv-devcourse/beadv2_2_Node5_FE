@@ -331,7 +331,7 @@ export default function CartPage() {
                       <img
                         src={getImageUrl(item.thumbnailUrl) || "/placeholder.svg"}
                         alt={productName}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-contain"
                       />
                     </div>
                     <div className="flex-1 min-w-0">

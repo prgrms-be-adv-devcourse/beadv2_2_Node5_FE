@@ -171,7 +171,7 @@ export default function OrderDetailPage() {
               <img
                 src={getImageUrl(item.imgUrl) || "/placeholder.svg"}
                 alt={item.productName}
-                className="w-16 h-16 rounded-md object-cover"
+                className="w-16 h-16 rounded-md object-contain bg-white"
               />
               <div className="flex-1">
                 <p className="font-semibold text-foreground">

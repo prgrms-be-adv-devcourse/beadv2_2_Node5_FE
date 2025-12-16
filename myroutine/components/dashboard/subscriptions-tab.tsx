@@ -104,7 +104,7 @@ export default function SubscriptionsTab() {
                     "/placeholder.svg"
                   }
                   alt={sub.productName}
-                  className="w-24 h-24 md:w-32 md:h-32 object-cover rounded-lg"
+                  className="w-24 h-24 md:w-32 md:h-32 object-contain rounded-lg bg-white"
                 />
               </div>
 
