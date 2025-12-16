@@ -39,7 +39,12 @@ export default function Footer() {
                 </a>
               </li>
               <li>
-                <a href="#" className="hover:text-primary">
+                <a
+                  href="https://github.com/prgrms-be-adv-devcourse/beadv2_2_Node5_BE"
+                  className="hover:text-primary"
+                  target="_blank"
+                  rel="noreferrer"
+                >
                   블로그
                 </a>
               </li>
