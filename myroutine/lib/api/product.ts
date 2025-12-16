@@ -44,7 +44,6 @@ export interface StatusRequest {
 }
 
 export interface ProductPresignedRequest {
-  fileName: string
   contentType: string
 }
 
@@ -117,7 +116,7 @@ export const searchApi = {
     minPrice?: number
     maxPrice?: number
     shopId?: string
-    sort?: ProductSearchSort
+    searchSort?: ProductSearchSort
     page?: number
     size?: number
   }) =>

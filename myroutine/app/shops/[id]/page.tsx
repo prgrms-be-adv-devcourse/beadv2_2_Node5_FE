@@ -197,7 +197,6 @@ export default function ShopDetailPage() {
     setCreateError(null)
     try {
       const presigned = await productApi.getPresignedUrl({
-        fileName: thumbnailFile.name,
         contentType: thumbnailFile.type || "image/*",
       })
 

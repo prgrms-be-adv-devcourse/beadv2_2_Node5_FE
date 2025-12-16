@@ -92,7 +92,7 @@ export default function ProductGrid({
             category: debouncedFilters.category || undefined,
             minPrice,
             maxPrice,
-            sort: debouncedFilters.sort || ProductSearchSort.LATEST,
+            searchSort: debouncedFilters.sort || ProductSearchSort.LATEST,
             page,
             size: 12,
           })
