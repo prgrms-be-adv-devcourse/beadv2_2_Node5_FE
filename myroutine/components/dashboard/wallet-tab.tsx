@@ -376,14 +376,13 @@ export default function WalletTab() {
                       >
                         {tx.description}
                       </p>
-                      <p className="text-sm text-muted-foreground flex gap-2 flex-wrap">
-                        <span>{formatDate(tx.date)}</span>
-                        {tx.reference && (
+                      {tx.reference && (
+                        <p className="text-sm text-muted-foreground flex gap-2 flex-wrap">
                           <span className="text-xs bg-muted px-2 py-1 rounded-full border">
                             {tx.reference}
                           </span>
-                        )}
-                      </p>
+                        </p>
+                      )}
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
@@ -396,18 +395,28 @@ export default function WalletTab() {
                         {tx.status}
                       </span>
                     )}
-                    <p
-                      className={`font-bold text-lg ${
-                        isRefunded
-                          ? "text-muted-foreground line-through"
-                          : tx.type === "deposit"
-                          ? "text-green-600"
-                          : "text-red-600"
-                      }`}
-                    >
-                      {tx.type === "deposit" ? "+" : "-"}₩
-                      {tx.amount.toLocaleString()}
-                    </p>
+                    <div className="flex items-center gap-2">
+                      <p
+                        className={`font-bold text-lg ${
+                          isRefunded
+                            ? "text-muted-foreground line-through"
+                            : tx.type === "deposit"
+                            ? "text-green-600"
+                            : "text-red-600"
+                        }`}
+                      >
+                        {tx.type === "deposit" ? "+" : "-"}₩
+                        {tx.amount.toLocaleString()}
+                      </p>
+                      {isRefunded && (
+                        <div className="flex items-center gap-1 text-sm font-semibold text-green-600">
+                          <span className="text-xs bg-green-50 border border-green-200 rounded px-2 py-0.5">
+                            환불
+                          </span>
+                          <span>+₩{tx.amount.toLocaleString()}</span>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               )
