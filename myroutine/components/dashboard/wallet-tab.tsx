@@ -444,41 +444,111 @@ export default function WalletTab() {
                 </p>
               ) : (
                 <div className="space-y-3">
-                  {payments.map((pay) => (
-                    <button
-                      key={pay.paymentKey || pay.orderId || pay.memberId}
-                      className="w-full text-left flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 rounded-lg border border-border hover:border-primary/60 hover:bg-muted/40"
-                      onClick={() => {
-                        setSelectedPayment(pay)
-                        setSelectedPaymentError(null)
-                      }}
-                    >
-                      <div className="space-y-1">
-                        <p className="font-bold text-foreground">
-                          {pay.method ? `충전 (${pay.method})` : "충전"}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          {formatDate(
-                            pay.approvedAt ||
-                              pay.requestedAt ||
-                              new Date().toISOString()
-                          )}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <span
-                          className={`px-2 py-1 rounded-full text-xs font-semibold border ${getPaymentStatusBadge(
-                            pay.status
-                          )}`}
+                  {payments.map((pay) => {
+                    const isSelected =
+                      selectedPayment?.paymentKey === pay.paymentKey &&
+                      selectedPayment?.orderId === pay.orderId
+                    return (
+                      <div
+                        key={pay.paymentKey || pay.orderId || pay.memberId}
+                        className="border border-border rounded-lg"
+                      >
+                        <button
+                          className={`w-full text-left flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 ${
+                            isSelected
+                              ? "bg-muted/40 border-b border-border"
+                              : "hover:border-primary/60 hover:bg-muted/30"
+                          }`}
+                          onClick={() => {
+                            setSelectedPayment(isSelected ? null : pay)
+                            setSelectedPaymentError(null)
+                          }}
                         >
-                          {pay.status}
-                        </span>
-                        <p className="font-bold text-lg text-primary">
-                          +₩{(pay.amount || 0).toLocaleString()}
-                        </p>
+                          <div className="space-y-1">
+                            <p className="font-bold text-foreground">
+                              {pay.method ? `충전 (${pay.method})` : "충전"}
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              {formatDate(
+                                pay.approvedAt ||
+                                  pay.requestedAt ||
+                                  new Date().toISOString()
+                              )}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <span
+                              className={`px-2 py-1 rounded-full text-xs font-semibold border ${getPaymentStatusBadge(
+                                pay.status
+                              )}`}
+                            >
+                              {pay.status}
+                            </span>
+                            <p className="font-bold text-lg text-primary">
+                              +₩{(pay.amount || 0).toLocaleString()}
+                            </p>
+                          </div>
+                        </button>
+                        {isSelected && (
+                          <div className="p-4 border-t border-border bg-muted/30 space-y-3">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                              <div>
+                                <p className="text-muted-foreground">금액</p>
+                                <p className="font-semibold text-primary">
+                                  ₩{(pay.amount || 0).toLocaleString()}
+                                </p>
+                              </div>
+                              <div>
+                                <p className="text-muted-foreground">요청 시각</p>
+                                <p className="font-semibold text-foreground">
+                                  {formatDate(
+                                    pay.requestedAt || new Date().toISOString()
+                                  )}
+                                </p>
+                              </div>
+                              <div>
+                                <p className="text-muted-foreground">승인 시각</p>
+                                <p className="font-semibold text-foreground">
+                                  {pay.approvedAt
+                                    ? formatDate(pay.approvedAt)
+                                    : "-"}
+                                </p>
+                              </div>
+                              {pay.failReason && (
+                                <div className="sm:col-span-2">
+                                  <p className="text-muted-foreground">
+                                    실패 사유
+                                  </p>
+                                  <p className="font-semibold text-red-600">
+                                    {pay.failReason}
+                                  </p>
+                                </div>
+                              )}
+                            </div>
+                            {pay.status === PaymentStatus.CONFIRMED && (
+                              <div className="flex flex-col gap-2">
+                                {selectedPaymentError && (
+                                  <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-md p-2">
+                                    {selectedPaymentError}
+                                  </p>
+                                )}
+                                <Button
+                                  variant="outline"
+                                  onClick={() => handleCancelPayment(pay)}
+                                  disabled={cancelingKey === pay.paymentKey}
+                                  className="self-start"
+                                >
+                                  {cancelingKey === pay.paymentKey
+                                    ? "환불 요청 중..."
+                                    : "환불 요청"}
+                                </Button>
+                              </div>
+                            )}
+                          </div>
+                        )}
                       </div>
-                    </button>
-                  ))}
+                    )
+                  })}
                   <div className="flex items-center justify-center gap-4 pt-2">
                     <Button
                       variant="outline"
@@ -502,88 +572,6 @@ export default function WalletTab() {
                       다음
                     </Button>
                   </div>
-                </div>
-              )}
-              {selectedPayment && (
-                <div className="mt-6 p-4 rounded-lg border border-border bg-muted/40 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-muted-foreground">선택한 결제</p>
-                      <p className="text-lg font-bold text-foreground">
-                        {selectedPayment.method
-                          ? `충전 (${selectedPayment.method})`
-                          : "충전"}
-                      </p>
-                    </div>
-                    <span
-                      className={`px-2 py-1 rounded-full text-xs font-semibold border ${getPaymentStatusBadge(
-                        selectedPayment.status
-                      )}`}
-                    >
-                      {selectedPayment.status}
-                    </span>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-                    <div>
-                      <p className="text-muted-foreground">금액</p>
-                      <p className="font-semibold text-primary">
-                        ₩{(selectedPayment.amount || 0).toLocaleString()}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-muted-foreground">주문/결제키</p>
-                      <p className="font-mono text-foreground break-all">
-                        {selectedPayment.orderId || "-"}
-                      </p>
-                      <p className="font-mono text-foreground break-all">
-                        {selectedPayment.paymentKey || "-"}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-muted-foreground">요청 시각</p>
-                      <p className="font-semibold text-foreground">
-                        {formatDate(
-                          selectedPayment.requestedAt ||
-                            new Date().toISOString()
-                        )}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-muted-foreground">승인 시각</p>
-                      <p className="font-semibold text-foreground">
-                        {selectedPayment.approvedAt
-                          ? formatDate(selectedPayment.approvedAt)
-                          : "-"}
-                      </p>
-                    </div>
-                    {selectedPayment.failReason && (
-                      <div className="sm:col-span-2">
-                        <p className="text-muted-foreground">실패 사유</p>
-                        <p className="font-semibold text-red-600">
-                          {selectedPayment.failReason}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                  {selectedPayment.status === PaymentStatus.CONFIRMED && (
-                    <div className="flex flex-col gap-2">
-                      {selectedPaymentError && (
-                        <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-md p-2">
-                          {selectedPaymentError}
-                        </p>
-                      )}
-                      <Button
-                        variant="outline"
-                        onClick={() => handleCancelPayment(selectedPayment)}
-                        disabled={cancelingKey === selectedPayment.paymentKey}
-                        className="self-start"
-                      >
-                        {cancelingKey === selectedPayment.paymentKey
-                          ? "환불 요청 중..."
-                          : "환불 요청"}
-                      </Button>
-                    </div>
-                  )}
                 </div>
               )}
             </div>
