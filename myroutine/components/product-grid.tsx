@@ -76,11 +76,13 @@ export default function ProductGrid({
       const isRangeChanged =
         currentRange[0] !== defaultRange[0] || currentRange[1] !== defaultRange[1]
       const hasFilter = !!debouncedFilters.searchQuery || !!debouncedFilters.category || isRangeChanged
+      const hasSort = (debouncedFilters.sort ?? ProductSearchSort.LATEST) !== ProductSearchSort.LATEST
+      const shouldUseSearchApi = hasFilter || hasSort
 
       setIsLoading(true)
       try {
         let data: ProductListResult | null = null
-        if (hasFilter) {
+        if (shouldUseSearchApi) {
           const isDefaultRange =
             currentRange[0] === defaultRange[0] &&
             currentRange[1] === defaultRange[1]
