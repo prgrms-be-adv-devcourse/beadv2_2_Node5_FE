@@ -7,7 +7,7 @@ export interface ProductInfoResponse {
   description?: string
   price: number | string
   stock?: number | string
-  status?: string
+  status?: ProductStatus | string
   category: string
   thumbnailUrl?: string
   createdAt?: string
@@ -19,7 +19,7 @@ export interface ProductRegisterRequest {
   description: string
   price: number
   stock: number
-  status: string
+  status: ProductStatus
   category: string
   thumbnailUrl: string
 }
@@ -33,8 +33,14 @@ export interface ProductModifyRequest {
   thumbnailUrl: string
 }
 
+export enum ProductStatus {
+  ON_SALE = "ON_SALE",
+  HIDDEN = "HIDDEN",
+  DISCONTINUED = "DISCONTINUED",
+}
+
 export interface StatusRequest {
-  status: string
+  status: ProductStatus
 }
 
 export interface ProductPresignedRequest {

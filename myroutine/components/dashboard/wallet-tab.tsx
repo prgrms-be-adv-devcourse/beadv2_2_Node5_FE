@@ -5,7 +5,7 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { ArrowDown, ArrowUp, Plus } from "lucide-react"
-import { paymentApi, type PaymentInfo } from "@/lib/api/payment"
+import { paymentApi, type PaymentInfo, PaymentStatus } from "@/lib/api/payment"
 import {
   walletApi,
   type WalletDepositInfo,
@@ -42,6 +42,7 @@ export default function WalletTab() {
   const [paymentTotal, setPaymentTotal] = useState(0)
   const [isPaymentLoading, setIsPaymentLoading] = useState(false)
   const [paymentError, setPaymentError] = useState<string | null>(null)
+  const [cancelingKey, setCancelingKey] = useState<string | null>(null)
 
   const mergeTransactions = (
     deposits: WalletDepositInfo[],
@@ -203,6 +204,48 @@ export default function WalletTab() {
     }
     fetchPayments()
   }, [showChargeHistory, paymentPage])
+
+  const refreshPayments = async (pageToLoad = paymentPage) => {
+    setIsPaymentLoading(true)
+    setPaymentError(null)
+    try {
+      const res = await paymentApi.getPayments(
+        pageToLoad,
+        PAYMENT_PAGE_SIZE,
+        "createdAt,desc"
+      )
+      const items = res?.content || []
+      setPayments(items)
+      setPaymentTotal(res?.totalElements || items.length)
+    } catch (err: any) {
+      setPaymentError(err?.message || "충전 내역을 불러오지 못했어요.")
+      setPayments([])
+      setPaymentTotal(0)
+    } finally {
+      setIsPaymentLoading(false)
+    }
+  }
+
+  const handleCancelPayment = async (pay: PaymentInfo) => {
+    if (!pay.paymentKey || !pay.orderId || !pay.amount) {
+      setPaymentError("취소할 결제 정보를 확인할 수 없습니다.")
+      return
+    }
+    setPaymentError(null)
+    setCancelingKey(pay.paymentKey)
+    try {
+      await paymentApi.cancelPayment({
+        paymentKey: pay.paymentKey,
+        orderId: pay.orderId,
+        amount: String(pay.amount),
+      })
+      await refreshPayments()
+    } catch (err: any) {
+      setPaymentError(err?.message || "환불 요청에 실패했습니다.")
+    } finally {
+      setCancelingKey(null)
+    }
+  }
 
   return (
     <div className="space-y-8">
@@ -399,7 +442,7 @@ export default function WalletTab() {
                   {payments.map((pay) => (
                     <div
                       key={pay.paymentKey || pay.orderId || pay.memberId}
-                      className="flex items-center justify-between p-4 rounded-lg border border-border"
+                      className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 rounded-lg border border-border"
                     >
                       <div className="space-y-1">
                         <p className="font-bold text-foreground">
@@ -424,6 +467,18 @@ export default function WalletTab() {
                         <p className="font-bold text-lg text-primary">
                           +₩{(pay.amount || 0).toLocaleString()}
                         </p>
+                        {pay.status === PaymentStatus.CONFIRMED && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleCancelPayment(pay)}
+                            disabled={cancelingKey === pay.paymentKey}
+                          >
+                            {cancelingKey === pay.paymentKey
+                              ? "처리 중..."
+                              : "환불 요청"}
+                          </Button>
+                        )}
                       </div>
                     </div>
                   ))}

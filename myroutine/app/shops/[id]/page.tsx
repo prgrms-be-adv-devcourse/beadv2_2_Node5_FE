@@ -6,13 +6,23 @@ import { useParams, useRouter } from "next/navigation"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { shopApi, type ShopInfoResponse, type ShopDeleteResponse } from "@/lib/api/shop"
-import { productApi, type ProductInfoResponse } from "@/lib/api/product"
+import {
+  productApi,
+  type ProductInfoResponse,
+  ProductStatus,
+} from "@/lib/api/product"
 import { persistAuthPayload } from "@/lib/api/auth"
 import { settlementApi, type SettlementListDetailInfo } from "@/lib/api/settlement"
 import { Mail, Phone, MapPin, X } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { CATEGORY_OPTIONS } from "@/lib/categories"
 import { getImageUrl } from "@/lib/image"
+
+const PRODUCT_STATUS_OPTIONS = [
+  { value: ProductStatus.ON_SALE, label: "판매중" },
+  { value: ProductStatus.HIDDEN, label: "숨김" },
+  { value: ProductStatus.DISCONTINUED, label: "판매중단" },
+]
 
 export default function ShopDetailPage() {
   const routeParams = useParams<{ id: string }>()
@@ -65,6 +75,7 @@ export default function ShopDetailPage() {
     category: CATEGORY_OPTIONS[0]?.id || "",
     description: "",
     thumbnailUrl: "",
+    status: ProductStatus.ON_SALE as ProductStatus,
   })
   const loadShopProducts = useCallback(async () => {
     if (!id) return
@@ -332,6 +343,7 @@ export default function ShopDetailPage() {
       category: product.category || CATEGORY_OPTIONS[0]?.id || "",
       description: product.description || "",
       thumbnailUrl: product.thumbnailUrl || "",
+      status: (product.status as ProductStatus) || ProductStatus.ON_SALE,
     })
     setShowProductModal(true)
   }
@@ -349,14 +361,52 @@ export default function ShopDetailPage() {
     setIsSavingProduct(true)
     setProductModalError(null)
     try {
-      await productApi.updateProduct(selectedProduct.id.toString(), {
-        name: productForm.name.trim(),
-        description: productForm.description.trim() || " ",
-        price: Number(productForm.price),
-        stock: Number(productForm.stock) || 0,
-        category: productForm.category,
-        thumbnailUrl: productForm.thumbnailUrl || "/placeholder.svg",
-      })
+      const prevStatus =
+        (selectedProduct.status as ProductStatus) || ProductStatus.ON_SALE
+      const nextStatus = productForm.status || ProductStatus.ON_SALE
+
+      const hasStatusChanged = prevStatus !== nextStatus
+      const hasInfoChanged =
+        productForm.name.trim() !== (selectedProduct.name || "") ||
+        Number(productForm.price) !== Number(selectedProduct.price) ||
+        (productForm.stock || "") !==
+          (typeof selectedProduct.stock === "number"
+            ? selectedProduct.stock.toString()
+            : selectedProduct.stock || "") ||
+        productForm.category !== (selectedProduct.category || "") ||
+        (productForm.description?.trim() || "") !==
+          (selectedProduct.description || "") ||
+        (productForm.thumbnailUrl || "") !==
+          (selectedProduct.thumbnailUrl || "")
+
+      // 상태만 바뀐 경우: 상태 API만 호출
+      if (!hasInfoChanged && hasStatusChanged) {
+        await productApi.updateProductStatus(selectedProduct.id.toString(), {
+          status: nextStatus,
+        })
+        setShowProductModal(false)
+        await loadShopProducts()
+        return
+      }
+
+      // 정보 변경이 있는 경우: 기본 정보 저장 후 상태 변경이 있으면 추가 호출
+      if (hasInfoChanged) {
+        await productApi.updateProduct(selectedProduct.id.toString(), {
+          name: productForm.name.trim(),
+          description: productForm.description.trim() || " ",
+          price: Number(productForm.price),
+          stock: Number(productForm.stock) || 0,
+          category: productForm.category,
+          thumbnailUrl: productForm.thumbnailUrl || "/placeholder.svg",
+        })
+      }
+
+      if (hasStatusChanged) {
+        await productApi.updateProductStatus(selectedProduct.id.toString(), {
+          status: nextStatus,
+        })
+      }
+
       setShowProductModal(false)
       await loadShopProducts()
     } catch (err: any) {
@@ -712,6 +762,25 @@ export default function ShopDetailPage() {
                 >
                   {CATEGORY_OPTIONS.map((option) => (
                     <option key={option.id} value={option.id}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-foreground mb-1">상태</p>
+                <select
+                  className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm text-foreground"
+                  value={productForm.status}
+                  onChange={(e) =>
+                    setProductForm((prev) => ({
+                      ...prev,
+                      status: e.target.value as ProductStatus,
+                    }))
+                  }
+                >
+                  {PRODUCT_STATUS_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
                       {option.label}
                     </option>
                   ))}
