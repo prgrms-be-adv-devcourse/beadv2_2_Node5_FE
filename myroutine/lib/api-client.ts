@@ -27,6 +27,13 @@ export interface PageResponse<T> {
   empty: boolean
 }
 
+// Endpoints that are publicly accessible without auth (no redirect on 401)
+const PUBLIC_GET_ENDPOINTS: ((path: string) => boolean)[] = [
+  (path) => path === "/catalog-service/api/v1/search",
+  (path) => path === "/catalog-service/api/v1/products",
+  (path) => /^\/catalog-service\/api\/v1\/products\/[^/]+$/.test(path),
+]
+
 class ApiClient {
   private baseUrl: string
   private accessToken: string | null = null
@@ -148,6 +155,10 @@ class ApiClient {
         return data as T
       }
 
+      const isPublicGet =
+        method === "GET" &&
+        PUBLIC_GET_ENDPOINTS.some((matcher) => matcher(endpoint))
+
       if (response.status === 401 && !hasRetried) {
         const newToken = await this.refreshAccessToken()
         hasRetried = true
@@ -155,12 +166,28 @@ class ApiClient {
           token = newToken
           continue
         }
+        if (!isPublicGet) {
+          this.handleUnauthorized()
+        }
       }
 
       throw {
         code: data?.code || "UNKNOWN_ERROR",
         message: data?.message || "An error occurred",
       } as ExceptionResponse
+    }
+  }
+
+  private handleUnauthorized() {
+    if (typeof window === "undefined") return
+    localStorage.removeItem("accessToken")
+    localStorage.removeItem("refreshToken")
+    // Redirect to login when no valid token/refresh is available
+    if (window.location.pathname !== "/login") {
+      const redirect = encodeURIComponent(
+        `${window.location.pathname}${window.location.search}`
+      )
+      window.location.href = `/login?redirect=${redirect}`
     }
   }
 
