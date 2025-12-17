@@ -19,7 +19,7 @@ export default function LoginPage() {
 
         const kakaoAuthUrl = `https://kauth.kakao.com/oauth/authorize?client_id=${NEXT_PUBLIC_KAKAO_CLIENT_ID}&redirect_uri=${encodeURIComponent(
           redirectUri
-        )}&response_type=code&state=${state}`
+        )}&response_type=code&state=${state}&prompt=login`
 
         window.location.href = kakaoAuthUrl
       } else if (provider === "google") {
