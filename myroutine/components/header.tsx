@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import { apiClient } from "@/lib/api-client"
 import { authApi } from "@/lib/api/auth"
+import { requireClientLogin } from "@/lib/auth-guard"
 
 export default function Header() {
   const router = useRouter()
@@ -108,7 +109,11 @@ export default function Header() {
               variant="ghost"
               size="icon"
               className="text-foreground hover:text-primary"
-              onClick={() => router.push("/cart")}
+              onClick={() => {
+                if (requireClientLogin(router)) {
+                  router.push("/cart")
+                }
+              }}
             >
               <ShoppingCart className="w-5 h-5" />
             </Button>

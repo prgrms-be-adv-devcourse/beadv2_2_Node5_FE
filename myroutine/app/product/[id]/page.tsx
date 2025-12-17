@@ -13,6 +13,7 @@ import { getCategoryLabel } from "@/lib/categories"
 import { Input } from "@/components/ui/input"
 import { cartApi } from "@/lib/api/cart"
 import { getImageUrl } from "@/lib/image"
+import { requireClientLogin } from "@/lib/auth-guard"
 
 export default function ProductDetailPage() {
   const router = useRouter()
@@ -31,6 +32,7 @@ export default function ProductDetailPage() {
 
   const handleAddToCart = () => {
     if (!product?.id && !id) return
+    if (!requireClientLogin(router)) return
     setError(null)
     cartApi
       .addToCart({ productId: (product?.id ?? id).toString(), quantity })
@@ -38,19 +40,6 @@ export default function ProductDetailPage() {
       .catch((err: any) =>
         setError(err?.message || "장바구니 담기에 실패했습니다.")
       )
-  }
-
-  const requireLogin = () => {
-    if (typeof window === "undefined") return false
-    const hasToken = !!localStorage.getItem("accessToken")
-    if (!hasToken) {
-      const redirect = encodeURIComponent(
-        `${window.location.pathname}${window.location.search}`
-      )
-      router.push(`/login?redirect=${redirect}`)
-      return false
-    }
-    return true
   }
 
   useEffect(() => {
@@ -219,7 +208,7 @@ export default function ProductDetailPage() {
                     size="lg"
                     className="flex-1 h-12 bg-transparent"
                     onClick={() => {
-                      if (requireLogin()) {
+                      if (requireClientLogin(router)) {
                         setShowOrderModal(true)
                       }
                     }}
@@ -230,7 +219,7 @@ export default function ProductDetailPage() {
                     size="lg"
                     className="flex-1 h-12 bg-primary hover:bg-primary/90"
                     onClick={() => {
-                      if (requireLogin()) {
+                      if (requireClientLogin(router)) {
                         setShowSubscriptionForm(true)
                       }
                     }}
