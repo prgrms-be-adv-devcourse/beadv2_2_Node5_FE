@@ -33,7 +33,7 @@ export default function LoginPage() {
         const NAVER_CLIENT_ID = process.env.NEXT_PUBLIC_NAVER_CLIENT_ID
         const naverAuthUrl = `https://nid.naver.com/oauth2.0/authorize?response_type=code&client_id=${NAVER_CLIENT_ID}&redirect_uri=${encodeURIComponent(
           redirectUri
-        )}&state=${state}`
+        )}&state=${state}&auth_type=reauthenticate`
 
         window.location.href = naverAuthUrl
       }

@@ -58,7 +58,7 @@ export default function WalletTab() {
       id: `deposit-${item.id}`,
       type: "deposit",
       amount: item.amount,
-      description: item.settlementId ? `정산 ${item.settlementId}` : "입금",
+      description: item.settlementId ? "정산" : "입금",
       date: item.createdAt,
     }))
 
