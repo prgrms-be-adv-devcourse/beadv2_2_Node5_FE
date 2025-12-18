@@ -64,12 +64,13 @@ export const persistAuthPayload = (
 }
 
 export const authApi = {
-  oauthLogin: (provider: string, providerCode: string) =>
+  oauthLogin: (provider: string, providerCode: string, redirectUrl: string) =>
     apiClient.post<LoginInfoResponse>(
       "/member-service/api/v1/auth/oauth/login",
       {
         provider,
         providerCode,
+        redirectUrl,
       }
     ),
   oauthRegister: (data: OAuthRegisterRequest) =>

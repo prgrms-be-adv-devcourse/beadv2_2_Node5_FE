@@ -21,7 +21,8 @@ export default function OAuthCallbackPage() {
           throw new Error("OAuth 정보가 없습니다")
         }
 
-        const response = await authApi.oauthLogin(provider, code)
+        const redirectUrl = `${window.location.origin}/auth/callback`
+        const response = await authApi.oauthLogin(provider, code, redirectUrl)
 
         // 응답에 accessToken이 있으면 기존 회원 (로그인)
         if (response.accessToken) {
