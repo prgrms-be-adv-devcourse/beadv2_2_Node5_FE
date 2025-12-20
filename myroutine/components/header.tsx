@@ -1,7 +1,7 @@
 "use client"
 import type React from "react"
 
-import { ShoppingCart, User, LogOut, Search } from "lucide-react"
+import { ShoppingCart, User, LogOut, Search, Sun, Moon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -9,14 +9,19 @@ import { useEffect, useState } from "react"
 import { apiClient } from "@/lib/api-client"
 import { authApi } from "@/lib/api/auth"
 import { requireClientLogin } from "@/lib/auth-guard"
+import { useTheme } from "next-themes"
 
 export default function Header() {
   const router = useRouter()
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
+  const { resolvedTheme, setTheme } = useTheme()
+  const [isThemeReady, setIsThemeReady] = useState(false)
 
   useEffect(() => {
+    setIsThemeReady(true)
+
     const syncAuthState = () => {
       const token = localStorage.getItem("accessToken")
       setIsLoggedIn(!!token)
@@ -105,6 +110,21 @@ export default function Header() {
 
           {/* Right Actions */}
           <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-foreground hover:text-primary"
+              onClick={() =>
+                setTheme(resolvedTheme === "dark" ? "light" : "dark")
+              }
+              aria-label="다크 모드 전환"
+            >
+              {isThemeReady && resolvedTheme === "dark" ? (
+                <Sun className="w-5 h-5" />
+              ) : (
+                <Moon className="w-5 h-5" />
+              )}
+            </Button>
             <Button
               variant="ghost"
               size="icon"

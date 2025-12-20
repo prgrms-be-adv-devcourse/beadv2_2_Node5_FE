@@ -4,6 +4,7 @@ const API_BASE_URL =
 export interface ExceptionResponse {
   code: string
   message: string
+  status?: number
 }
 
 export interface PageInfoDto {
@@ -174,6 +175,7 @@ class ApiClient {
       throw {
         code: data?.code || "UNKNOWN_ERROR",
         message: data?.message || "An error occurred",
+        status: response.status,
       } as ExceptionResponse
     }
   }

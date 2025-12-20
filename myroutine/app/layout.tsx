@@ -4,6 +4,7 @@ import { Analytics } from "@vercel/analytics/next"
 import "./globals.css"
 import Footer from "@/components/footer"
 import Header from "@/components/header"
+import { ThemeProvider } from "@/components/theme-provider"
 
 export const metadata: Metadata = {
   title: "MyRoutine - 구독형 이커머스",
@@ -34,14 +35,16 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="ko">
+    <html lang="ko" suppressHydrationWarning>
       <body className={`font-sans antialiased`}>
-        <div className="flex flex-col min-h-screen bg-background">
-          <Header />
-          {children}
-          <Footer />
-          {/* <Analytics /> */}
-        </div>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <div className="flex flex-col min-h-screen bg-background">
+            <Header />
+            {children}
+            <Footer />
+            {/* <Analytics /> */}
+          </div>
+        </ThemeProvider>
       </body>
     </html>
   )

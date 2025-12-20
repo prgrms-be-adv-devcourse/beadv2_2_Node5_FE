@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { ArrowDown, ArrowUp, Plus, ChevronDown, ChevronUp } from "lucide-react"
@@ -11,6 +12,7 @@ import {
   type WalletDepositInfo,
   type WalletWithdrawInfo,
 } from "@/lib/api/wallet"
+import { WalletConsentModal } from "./wallet-consent-modal"
 
 interface Transaction {
   id: string
@@ -27,6 +29,7 @@ const PAGE_SIZE = 10
 const PAYMENT_PAGE_SIZE = 10
 
 export default function WalletTab() {
+  const router = useRouter()
   const [balance, setBalance] = useState(0)
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [isLoading, setIsLoading] = useState(false)
@@ -37,6 +40,7 @@ export default function WalletTab() {
   const [page, setPage] = useState(0)
   const [totalCount, setTotalCount] = useState(0)
   const [showChargeHistory, setShowChargeHistory] = useState(false)
+  const [showWalletConsent, setShowWalletConsent] = useState(false)
   const [payments, setPayments] = useState<PaymentInfo[]>([])
   const [paymentPage, setPaymentPage] = useState(0)
   const [paymentTotal, setPaymentTotal] = useState(0)
@@ -49,6 +53,8 @@ export default function WalletTab() {
   const [selectedPaymentError, setSelectedPaymentError] = useState<
     string | null
   >(null)
+  const [walletNotFound, setWalletNotFound] = useState(false)
+  const [isCreatingWallet, setIsCreatingWallet] = useState(false)
 
   const mergeTransactions = (
     deposits: Array<WalletDepositInfo & { createdAt?: string }>,
@@ -106,13 +112,22 @@ export default function WalletTab() {
     const fetchWallet = async () => {
       setIsWalletLoading(true)
       setWalletError(null)
+      setWalletNotFound(false)
       try {
         const wallet = await walletApi.getWallet()
         if (typeof wallet?.balance === "number") {
           setBalance(wallet.balance)
         }
       } catch (err: any) {
-        setWalletError(err?.message || "잔액을 불러오지 못했어요.")
+        const isNotFoundError =
+          err?.code === "WALLET_001" || err?.status === 404
+
+        if (isNotFoundError) {
+          setWalletNotFound(true)
+          setWalletError(null)
+        } else {
+          setWalletError(err?.message || "잔액을 불러오지 못했어요.")
+        }
         setBalance(0)
       } finally {
         setIsWalletLoading(false)
@@ -124,6 +139,11 @@ export default function WalletTab() {
 
   useEffect(() => {
     const fetchTransactions = async (selectedFilter: TransactionFilter) => {
+      if (walletNotFound) {
+        setTransactions([])
+        setTotalCount(0)
+        return
+      }
       setIsLoading(true)
       setError(null)
       try {
@@ -185,12 +205,47 @@ export default function WalletTab() {
 
     fetchTransactions(filter)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filter, page])
+  }, [filter, page, walletNotFound])
 
   const hasNext = (page + 1) * PAGE_SIZE < totalCount
   const hasPrev = page > 0
   const hasPaymentNext = (paymentPage + 1) * PAYMENT_PAGE_SIZE < paymentTotal
   const hasPaymentPrev = paymentPage > 0
+
+  const handleCreateWallet = async () => {
+    setIsCreatingWallet(true)
+    setWalletError(null)
+    try {
+      const newWallet = await walletApi.createWallet()
+      setBalance(newWallet?.balance ?? 0)
+      setWalletNotFound(false)
+    } catch (err: any) {
+      setWalletError(
+        err?.message || "지갑을 생성하지 못했어요. 잠시 후 다시 시도해주세요."
+      )
+    } finally {
+      setIsCreatingWallet(false)
+    }
+  }
+
+  const handleCharge = async () => {
+    if (!walletNotFound) {
+      router.push("/wallet/charge")
+      return
+    }
+
+    setShowWalletConsent(true)
+  }
+
+  const handleConsentConfirm = async () => {
+    setShowWalletConsent(false)
+    await handleCreateWallet()
+    if (!walletNotFound) router.push("/wallet/charge")
+  }
+
+  const handleConsentCancel = () => {
+    setShowWalletConsent(false)
+  }
 
   useEffect(() => {
     if (!showChargeHistory) return
@@ -275,15 +330,14 @@ export default function WalletTab() {
           <p className="text-sm text-red-600 mb-2">{walletError}</p>
         )}
         <div className="flex flex-col sm:flex-row gap-2">
-          <Link href="/wallet/charge" className="flex-1">
-            <Button
-              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold gap-2"
-              disabled={isWalletLoading}
-            >
-              <Plus className="w-5 h-5" />
-              충전하기
-            </Button>
-          </Link>
+          <Button
+            className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground font-bold gap-2"
+            onClick={handleCharge}
+            disabled={isWalletLoading || isCreatingWallet}
+          >
+            {!isCreatingWallet && <Plus className="w-5 h-5" />}
+            {isCreatingWallet ? "지갑 생성 중..." : "충전하기"}
+          </Button>
           <Button
             variant="outline"
             className="flex-1"
@@ -610,6 +664,13 @@ export default function WalletTab() {
           </Card>
         </div>
       )}
+
+      <WalletConsentModal
+        open={showWalletConsent}
+        loading={isCreatingWallet}
+        onConfirm={handleConsentConfirm}
+        onCancel={handleConsentCancel}
+      />
     </div>
   )
 }

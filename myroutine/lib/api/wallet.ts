@@ -27,6 +27,8 @@ export enum WalletWithdrawLogState {
 }
 
 export const walletApi = {
+  createWallet: () =>
+    apiClient.post<WalletInfo>(`/billing-service/api/v1/wallets`),
   getWallet: () => apiClient.get<WalletInfo>(`/billing-service/api/v1/wallets`),
   getDeposits: (page = 0, size = 10, sort = "createdAt,desc") =>
     apiClient.get<PageResponse<WalletDepositInfo>>(

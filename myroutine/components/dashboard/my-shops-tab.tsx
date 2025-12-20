@@ -16,6 +16,9 @@ import {
 } from "@/lib/api/shop"
 import { persistAuthPayload } from "@/lib/api/auth"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { walletApi } from "@/lib/api/wallet"
+import { WalletConsentModal } from "./wallet-consent-modal"
 
 interface Shop {
   id: string
@@ -23,13 +26,17 @@ interface Shop {
 }
 
 export default function MyShopsTab() {
+  const router = useRouter()
   const [shops, setShops] = useState<Shop[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isCheckingWallet, setIsCheckingWallet] = useState(false)
+  const [isCreatingWallet, setIsCreatingWallet] = useState(false)
   const [page, setPage] = useState(0)
   const [totalPages, setTotalPages] = useState(1)
   const [error, setError] = useState<string | null>(null)
   const [showForm, setShowForm] = useState(false)
+  const [showWalletConsent, setShowWalletConsent] = useState(false)
   const [formData, setFormData] = useState<ShopRegisterRequest>({
     shopName: "",
     shopEmail: "",
@@ -67,6 +74,25 @@ export default function MyShopsTab() {
     fetchShops(0)
   }, [])
 
+  const handleOpenForm = async () => {
+    setError(null)
+    setIsCheckingWallet(true)
+    try {
+      await walletApi.getWallet()
+      setShowForm(true)
+    } catch (err: any) {
+      const isWalletMissing =
+        err?.code === "WALLET_001" || err?.status === 404 || err?.code === "NOT_FOUND"
+      if (isWalletMissing) {
+        setShowWalletConsent(true)
+      } else {
+        setError(err?.message || "지갑 정보를 확인하지 못했습니다. 잠시 후 다시 시도해주세요.")
+      }
+    } finally {
+      setIsCheckingWallet(false)
+    }
+  }
+
   const handleAddShop = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
@@ -99,14 +125,37 @@ export default function MyShopsTab() {
     }
   }
 
+  const handleConsentConfirm = async () => {
+    setIsCreatingWallet(true)
+    setError(null)
+    try {
+      await walletApi.createWallet()
+      setShowWalletConsent(false)
+      setShowForm(true)
+    } catch (err: any) {
+      setError(err?.message || "지갑을 생성하지 못했습니다. 잠시 후 다시 시도해주세요.")
+    } finally {
+      setIsCreatingWallet(false)
+    }
+  }
+
+  const handleConsentCancel = () => {
+    setShowWalletConsent(false)
+  }
+
   return (
-    <div className="space-y-6">
+    <>
+      <div className="space-y-6">
       {/* Add Shop Button */}
       <Button
-        onClick={() => setShowForm(true)}
+        onClick={handleOpenForm}
         className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold gap-2"
+        disabled={isCheckingWallet || isCreatingWallet}
       >
-        <Plus className="w-5 h-5" />새 상점 등록
+        <Plus className="w-5 h-5" />
+        {isCheckingWallet || isCreatingWallet
+          ? "지갑 확인 중..."
+          : "새 상점 등록"}
       </Button>
 
       {/* Add Shop Form */}
@@ -284,5 +333,13 @@ export default function MyShopsTab() {
         </>
       )}
     </div>
+
+      <WalletConsentModal
+        open={showWalletConsent}
+        loading={isCreatingWallet}
+        onConfirm={handleConsentConfirm}
+        onCancel={handleConsentCancel}
+      />
+    </>
   )
 }
