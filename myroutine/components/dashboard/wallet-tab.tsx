@@ -229,6 +229,14 @@ export default function WalletTab() {
   }
 
   const handleCharge = async () => {
+    if (isWalletLoading) return
+    if (walletError) {
+      setWalletError(
+        walletError ||
+          "지갑 정보를 불러오지 못해 충전을 진행할 수 없습니다."
+      )
+      return
+    }
     if (!walletNotFound) {
       router.push("/wallet/charge")
       return
@@ -333,7 +341,7 @@ export default function WalletTab() {
           <Button
             className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground font-bold gap-2"
             onClick={handleCharge}
-            disabled={isWalletLoading || isCreatingWallet}
+            disabled={isWalletLoading || isCreatingWallet || !!walletError}
           >
             {!isCreatingWallet && <Plus className="w-5 h-5" />}
             {isCreatingWallet ? "지갑 생성 중..." : "충전하기"}
