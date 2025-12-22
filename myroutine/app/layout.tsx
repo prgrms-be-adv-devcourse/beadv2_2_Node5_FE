@@ -2,9 +2,8 @@ import type React from "react"
 import type { Metadata } from "next"
 import { Analytics } from "@vercel/analytics/next"
 import "./globals.css"
-import Footer from "@/components/footer"
-import Header from "@/components/header"
 import { ThemeProvider } from "@/components/theme-provider"
+import AppShell from "@/components/app-shell"
 
 export const metadata: Metadata = {
   title: "MyRoutine - 구독형 이커머스",
@@ -38,12 +37,10 @@ export default function RootLayout({
     <html lang="ko" suppressHydrationWarning>
       <body className={`font-sans antialiased`}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <div className="flex flex-col min-h-screen bg-background">
-            <Header />
+          <AppShell>
             {children}
-            <Footer />
             {/* <Analytics /> */}
-          </div>
+          </AppShell>
         </ThemeProvider>
       </body>
     </html>
