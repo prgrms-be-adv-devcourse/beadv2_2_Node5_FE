@@ -18,6 +18,7 @@ services:
 
   nginx:
     image: "jc21/nginx-proxy-manager:latest"
+    network_mode: host
     restart: unless-stopped
     ports:
       - "80:80"
