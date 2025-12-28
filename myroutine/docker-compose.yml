@@ -7,5 +7,3 @@ services:
       - ./data:/data
       - ./letsencrypt:/etc/letsencrypt
       - /opt/websites:/mnt/user/appdata/NginxProxyManager/websites
-    depends_on:
-      - frontend
