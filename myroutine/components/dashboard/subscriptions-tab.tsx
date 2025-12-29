@@ -3,9 +3,7 @@
 import { useEffect, useState } from "react"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import {
-  formatDaysOfWeek,
-} from "@/lib/api-client"
+import { formatDaysOfWeek } from "@/lib/api-client"
 import { subscriptionApi, type SubscriptionInfo } from "@/lib/api/subscription"
 import Link from "next/link"
 import { getImageUrl } from "@/lib/image"
@@ -35,6 +33,11 @@ export default function SubscriptionsTab() {
   const [subscriptions, setSubscriptions] =
     useState<SubscriptionItem[]>([])
 
+  const normalizeRecurrenceType = (value?: string) =>
+    (value || "WEEKLY").toString().toUpperCase() === "MONTHLY"
+      ? "MONTHLY"
+      : "WEEKLY"
+
   useEffect(() => {
     const fetchSubscriptions = async () => {
       try {
@@ -43,6 +46,7 @@ export default function SubscriptionsTab() {
           setSubscriptions(
             data.content.map((item) => ({
               ...item,
+              recurrenceType: normalizeRecurrenceType(item.recurrenceType),
             }))
           )
         }
