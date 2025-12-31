@@ -6,6 +6,7 @@ import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
+import AddressSearchInput from "@/components/address-search-input"
 import { Plus } from "lucide-react"
 import { type PageResponse } from "@/lib/api-client"
 import {
@@ -42,6 +43,7 @@ export default function MyShopsTab() {
     shopAddress: "",
     shopRegistrationNumber: "",
   })
+  const [shopAddressDetail, setShopAddressDetail] = useState("")
 
   const fetchShops = async (pageToLoad = 0) => {
     setIsLoading(true)
@@ -102,7 +104,13 @@ export default function MyShopsTab() {
     setIsSubmitting(true)
     setError(null)
     try {
-      await shopApi.createShop(formData)
+      const fullAddress = shopAddressDetail.trim()
+        ? `${formData.shopAddress} ${shopAddressDetail.trim()}`
+        : formData.shopAddress
+      await shopApi.createShop({
+        ...formData,
+        shopAddress: fullAddress,
+      })
 
       await fetchShops(0)
       setFormData({
@@ -112,6 +120,7 @@ export default function MyShopsTab() {
         shopAddress: "",
         shopRegistrationNumber: "",
       })
+      setShopAddressDetail("")
       setShowForm(false)
       alert("상점이 등록되었습니다!")
     } catch (err: any) {
@@ -218,17 +227,25 @@ export default function MyShopsTab() {
               <label className="block text-sm font-bold text-foreground mb-2">
                 상점 주소 *
               </label>
-              <Input
+              <AddressSearchInput
+                id="shopAddress"
                 value={formData.shopAddress}
-                onChange={(e) =>
+                onChange={(value) =>
                   setFormData((prev) => ({
                     ...prev,
-                    shopAddress: e.target.value,
+                    shopAddress: value,
                   }))
                 }
                 placeholder="상점 주소를 입력하세요"
-                className="h-10"
                 required
+                readOnly
+              />
+              <Input
+                id="shopAddressDetail"
+                value={shopAddressDetail}
+                onChange={(e) => setShopAddressDetail(e.target.value)}
+                placeholder="상세 주소를 입력하세요"
+                className="h-10 mt-2"
               />
             </div>
 

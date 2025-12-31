@@ -5,6 +5,7 @@ import type React from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
+import AddressSearchInput from "@/components/address-search-input"
 import Link from "next/link"
 import { CheckCircle2 } from "lucide-react"
 import { authApi, persistAuthPayload } from "@/lib/api/auth"
@@ -30,6 +31,7 @@ export default function SignupPage() {
   const [name, setName] = useState("")
   const [phoneNumber, setPhoneNumber] = useState("")
   const [address, setAddress] = useState("")
+  const [addressDetail, setAddressDetail] = useState("")
   const [profileError, setProfileError] = useState("")
 
   useEffect(() => {
@@ -99,12 +101,15 @@ export default function SignupPage() {
     setIsLoading(true)
     setProfileError("")
     try {
+      const fullAddress = addressDetail.trim()
+        ? `${address} ${addressDetail.trim()}`
+        : address
       const response = await authApi.oauthRegister({
         temporaryToken,
         email,
         name,
         phoneNumber,
-        address,
+        address: fullAddress,
       })
 
       // <CHANGE> 토큰 저장 후 대시보드로 이동
@@ -314,17 +319,27 @@ export default function SignupPage() {
                 >
                   배송지 주소
                 </label>
-                <Input
+                <AddressSearchInput
                   id="address"
-                  type="text"
                   value={address}
-                  onChange={(e) => {
-                    setAddress(e.target.value)
+                  onChange={(value) => {
+                    setAddress(value)
                     setProfileError("")
                   }}
-                  placeholder="서울시 강남구 역삼동"
-                  className="h-10"
+                  placeholder="주소를 검색하세요"
                   required
+                  readOnly
+                />
+                <Input
+                  id="addressDetail"
+                  type="text"
+                  value={addressDetail}
+                  onChange={(e) => {
+                    setAddressDetail(e.target.value)
+                    setProfileError("")
+                  }}
+                  placeholder="상세 주소를 입력하세요"
+                  className="h-10 mt-2"
                 />
               </div>
 

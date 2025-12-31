@@ -6,6 +6,7 @@ import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
+import AddressSearchInput from "@/components/address-search-input"
 import { Save } from "lucide-react"
 import { apiClient } from "@/lib/api-client"
 import { memberApi, type MemberInfoResponse } from "@/lib/api/member"
@@ -30,6 +31,7 @@ export default function MyInfoTab() {
   const [isSaving, setIsSaving] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [addressDetail, setAddressDetail] = useState("")
 
   useEffect(() => {
     const fetchMe = async () => {
@@ -64,10 +66,13 @@ export default function MyInfoTab() {
     setIsSaving(true)
     setError(null)
     try {
+      const fullAddress = addressDetail.trim()
+        ? `${formData.address} ${addressDetail.trim()}`
+        : formData.address
       await memberApi.updateMe({
         name: formData.name,
         phoneNumber: formData.phoneNumber,
-        address: formData.address,
+        address: fullAddress,
       })
       setIsEditing(false)
     } catch (err: any) {
@@ -157,12 +162,23 @@ export default function MyInfoTab() {
           <label className="block text-sm font-bold text-foreground mb-2">
             배송지 주소
           </label>
-          <Input
-            name="address"
+          <AddressSearchInput
+            id="address"
             value={formData.address}
-            onChange={handleChange}
+            onChange={(value) =>
+              setFormData((prev) => ({ ...prev, address: value }))
+            }
             disabled={!isEditing || isSaving || isLoading}
-            className="h-10"
+            required
+            readOnly
+          />
+          <Input
+            id="addressDetail"
+            value={addressDetail}
+            onChange={(e) => setAddressDetail(e.target.value)}
+            disabled={!isEditing || isSaving || isLoading}
+            placeholder="상세 주소를 입력하세요"
+            className="h-10 mt-2"
           />
         </div>
 

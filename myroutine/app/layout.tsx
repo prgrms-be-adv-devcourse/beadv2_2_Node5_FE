@@ -4,6 +4,7 @@ import { Analytics } from "@vercel/analytics/next"
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import AppShell from "@/components/app-shell"
+import DaumPostcodeScript from "@/components/daum-postcode-script"
 
 export const metadata: Metadata = {
   title: "MyRoutine - 구독형 이커머스",
@@ -37,6 +38,7 @@ export default function RootLayout({
     <html lang="ko" suppressHydrationWarning>
       <body className={`font-sans antialiased`}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <DaumPostcodeScript />
           <AppShell>
             {children}
             {/* <Analytics /> */}

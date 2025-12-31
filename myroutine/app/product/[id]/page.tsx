@@ -11,6 +11,7 @@ import { orderApi, OrderType } from "@/lib/api/order"
 import { type ProductInfoResponse, productApi } from "@/lib/api/product"
 import { getCategoryLabel } from "@/lib/categories"
 import { Input } from "@/components/ui/input"
+import AddressSearchInput from "@/components/address-search-input"
 import { cartApi } from "@/lib/api/cart"
 import { getImageUrl } from "@/lib/image"
 import { requireClientLogin } from "@/lib/auth-guard"
@@ -28,6 +29,7 @@ export default function ProductDetailPage() {
   const [orderError, setOrderError] = useState<string | null>(null)
   const [recipientName, setRecipientName] = useState("")
   const [recipientAddress, setRecipientAddress] = useState("")
+  const [recipientAddressDetail, setRecipientAddressDetail] = useState("")
   const [error, setError] = useState<string | null>(null)
 
   const handleAddToCart = () => {
@@ -87,10 +89,13 @@ export default function ProductDetailPage() {
     setIsOrdering(true)
     setOrderError(null)
     try {
+      const fullAddress = recipientAddressDetail.trim()
+        ? `${recipientAddress.trim()} ${recipientAddressDetail.trim()}`
+        : recipientAddress.trim()
       const res = await orderApi.createOrder({
         orderType: OrderType.NORMAL,
         recipientName: recipientName.trim(),
-        recipientAddress: recipientAddress.trim(),
+        recipientAddress: fullAddress,
         items: [
           {
             productId: product.id?.toString() || id,
@@ -318,10 +323,18 @@ export default function ProductDetailPage() {
                   <label className="text-sm font-semibold text-foreground mb-1 block">
                     배송지 주소
                   </label>
-                  <Input
+                  <AddressSearchInput
                     value={recipientAddress}
-                    onChange={(e) => setRecipientAddress(e.target.value)}
+                    onChange={setRecipientAddress}
                     placeholder="주소를 입력하세요"
+                    required
+                    readOnly
+                  />
+                  <Input
+                    value={recipientAddressDetail}
+                    onChange={(e) => setRecipientAddressDetail(e.target.value)}
+                    placeholder="상세 주소를 입력하세요"
+                    className="mt-2"
                   />
                 </div>
               </div>

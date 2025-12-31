@@ -5,6 +5,8 @@ import { X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
+import { Input } from "@/components/ui/input"
+import AddressSearchInput from "@/components/address-search-input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import {
@@ -31,6 +33,7 @@ export default function SubscriptionForm({ product, onClose }: SubscriptionFormP
   const [selectedDayOfMonth, setSelectedDayOfMonth] = useState("1")
   const [quantity, setQuantity] = useState(1)
   const [address, setAddress] = useState("")
+  const [addressDetail, setAddressDetail] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const price =
     typeof product.price === "string"
@@ -60,11 +63,15 @@ export default function SubscriptionForm({ product, onClose }: SubscriptionFormP
       return
     }
 
+    const fullAddress = addressDetail.trim()
+      ? `${address} ${addressDetail.trim()}`
+      : address
+
     const subscriptionData = {
       productId,
       quantity,
       recurrenceType,
-      deliveryAddress: address,
+      deliveryAddress: fullAddress,
       dayOfWeek: recurrenceType === "WEEKLY" ? selectedDaysOfWeek : undefined,
       dayOfMonth: recurrenceType === "MONTHLY" ? Number.parseInt(selectedDayOfMonth) : undefined,
     }
@@ -197,13 +204,20 @@ export default function SubscriptionForm({ product, onClose }: SubscriptionFormP
               <Label htmlFor="address" className="text-foreground font-bold mb-3 block">
                 배송지
               </Label>
-              <input
-                type="text"
+              <AddressSearchInput
                 id="address"
                 value={address}
-                onChange={(e) => setAddress(e.target.value)}
+                onChange={setAddress}
                 placeholder="배송받을 주소를 입력하세요"
-                className="w-full h-10 px-3 rounded-md border border-border text-foreground placeholder:text-muted-foreground"
+                required
+                readOnly
+              />
+              <Input
+                id="addressDetail"
+                value={addressDetail}
+                onChange={(e) => setAddressDetail(e.target.value)}
+                placeholder="상세 주소를 입력하세요"
+                className="h-10 mt-2"
               />
             </div>
 

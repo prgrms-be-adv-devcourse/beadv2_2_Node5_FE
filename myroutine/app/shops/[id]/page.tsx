@@ -14,6 +14,7 @@ import {
 import { settlementApi, type SettlementListDetailInfo } from "@/lib/api/settlement"
 import { Mail, Phone, MapPin, X } from "lucide-react"
 import { Input } from "@/components/ui/input"
+import AddressSearchInput from "@/components/address-search-input"
 import { CATEGORY_OPTIONS } from "@/lib/categories"
 import { getImageUrl } from "@/lib/image"
 
@@ -121,6 +122,7 @@ export default function ShopDetailPage() {
     shopPhoneNumber: "",
     shopAddress: "",
   })
+  const [shopAddressDetail, setShopAddressDetail] = useState("")
   const [showSettlementModal, setShowSettlementModal] = useState(false)
   const [settlementStart, setSettlementStart] = useState("")
   const [settlementEnd, setSettlementEnd] = useState("")
@@ -200,18 +202,21 @@ export default function ShopDetailPage() {
     setIsSaving(true)
     setError(null)
     try {
+      const fullAddress = shopAddressDetail.trim()
+        ? `${formData.shopAddress} ${shopAddressDetail.trim()}`
+        : formData.shopAddress
       await shopApi.modifyShop(id, {
         shopName: formData.shopName,
         shopEmail: formData.shopEmail,
         shopPhoneNumber: formData.shopPhoneNumber,
-        shopAddress: formData.shopAddress,
+        shopAddress: fullAddress,
       })
       const updated = {
         id: shop.id,
         shopName: formData.shopName,
         shopEmail: formData.shopEmail,
         shopPhoneNumber: formData.shopPhoneNumber,
-        shopAddress: formData.shopAddress,
+        shopAddress: fullAddress,
       }
       setShop(updated)
       setIsEditing(false)
@@ -639,15 +644,25 @@ export default function ShopDetailPage() {
                       <p className="text-sm font-semibold text-foreground mb-1">
                         주소
                       </p>
-                      <Input
+                      <AddressSearchInput
+                        id="shopAddress"
                         value={formData.shopAddress}
-                        onChange={(e) =>
+                        onChange={(value) =>
                           setFormData((prev) => ({
                             ...prev,
-                            shopAddress: e.target.value,
+                            shopAddress: value,
                           }))
                         }
                         placeholder="상점 주소를 입력하세요"
+                        required
+                        readOnly
+                      />
+                      <Input
+                        id="shopAddressDetail"
+                        value={shopAddressDetail}
+                        onChange={(e) => setShopAddressDetail(e.target.value)}
+                        placeholder="상세 주소를 입력하세요"
+                        className="mt-2"
                       />
                     </div>
                   </div>
