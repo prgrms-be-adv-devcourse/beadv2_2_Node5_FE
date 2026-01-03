@@ -148,7 +148,7 @@ export default function AdminPage() {
     if (activeSection !== "paths") return
     const fetchRoles = async () => {
       try {
-        const res = await adminApi.getRoles()
+        const res = await adminApi.getMemberRoles()
         if (res?.roles?.length) {
           setRoleOptions(res.roles)
           setEndpointRole((prev) =>
