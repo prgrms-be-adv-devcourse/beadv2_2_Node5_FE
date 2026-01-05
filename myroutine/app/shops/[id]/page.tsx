@@ -7,7 +7,7 @@ import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { shopApi, type ShopInfoResponse } from "@/lib/api/shop"
 import {
-  productApi,
+  sellerProductApi,
   type ProductInfoResponse,
   ProductStatus,
 } from "@/lib/api/product"
@@ -151,7 +151,7 @@ export default function ShopDetailPage() {
     setIsLoadingProducts(true)
     setProductError(null)
     try {
-      const res = await productApi.getProductListByShop(id, {
+      const res = await sellerProductApi.getMyShopProducts(id, {
         page: 0,
         size: 12,
         sort: "createdAt,desc",
@@ -260,7 +260,7 @@ export default function ShopDetailPage() {
     setIsCreatingProduct(true)
     setCreateError(null)
     try {
-      const presigned = await productApi.getPresignedUrl({
+      const presigned = await sellerProductApi.getPresignedUrl({
         contentType: thumbnailFile.type || "image/*",
       })
 
@@ -286,7 +286,7 @@ export default function ShopDetailPage() {
 
       const imageUrl = presigned.key || presigned.url.split("?")[0] || ""
 
-      await productApi.createProduct(shop.id, {
+      await sellerProductApi.createProduct(shop.id, {
         name: createForm.name.trim(),
         description: createForm.description.trim() || " ",
         price: Number(createForm.price),
@@ -444,7 +444,7 @@ export default function ShopDetailPage() {
 
       // 상태만 바뀐 경우: 상태 API만 호출
       if (!hasInfoChanged && hasStatusChanged) {
-        await productApi.updateProductStatus(selectedProduct.id.toString(), {
+        await sellerProductApi.updateProductStatus(selectedProduct.id.toString(), {
           status: nextStatus,
         })
         setShowProductModal(false)
@@ -454,7 +454,7 @@ export default function ShopDetailPage() {
 
       // 정보 변경이 있는 경우: 기본 정보 저장 후 상태 변경이 있으면 추가 호출
       if (hasInfoChanged) {
-        await productApi.updateProduct(selectedProduct.id.toString(), {
+        await sellerProductApi.updateProduct(selectedProduct.id.toString(), {
           name: productForm.name.trim(),
           description: productForm.description.trim() || " ",
           price: Number(productForm.price),
@@ -465,7 +465,7 @@ export default function ShopDetailPage() {
       }
 
       if (hasStatusChanged) {
-        await productApi.updateProductStatus(selectedProduct.id.toString(), {
+        await sellerProductApi.updateProductStatus(selectedProduct.id.toString(), {
           status: nextStatus,
         })
       }
@@ -485,7 +485,7 @@ export default function ShopDetailPage() {
     setIsDeletingProduct(true)
     setProductModalError(null)
     try {
-      await productApi.deleteProduct(selectedProduct.id.toString())
+      await sellerProductApi.deleteProduct(selectedProduct.id.toString())
       setShowProductModal(false)
       await loadShopProducts()
     } catch (err: any) {

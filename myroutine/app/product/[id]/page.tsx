@@ -37,7 +37,7 @@ export default function ProductDetailPage() {
     if (!requireClientLogin(router)) return
     setError(null)
     cartApi
-      .addToCart({ productId: (product?.id ?? id).toString(), quantity })
+      .addCartItem({ productId: (product?.id ?? id).toString(), quantity })
       .then(() => alert("장바구니에 담았어요!"))
       .catch((err: any) =>
         setError(err?.message || "장바구니 담기에 실패했습니다.")
@@ -55,8 +55,7 @@ export default function ProductDetailPage() {
           ...data,
           id: data.id ?? id,
           price: data.price ?? 0,
-          thumbnailUrl:
-            getImageUrl(data.thumbnailUrl) ?? "/placeholder.svg",
+          thumbnailUrl: getImageUrl(data.thumbnailUrl) ?? "/placeholder.svg",
         })
       } catch (err: any) {
         setError(err?.message || "상품 정보를 불러오지 못했습니다.")

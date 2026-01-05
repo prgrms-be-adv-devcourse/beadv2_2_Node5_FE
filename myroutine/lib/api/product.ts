@@ -62,28 +62,34 @@ export const productApi = {
     apiClient.get<ProductInfoResponse>(
       `/catalog-service/api/v1/products/${id}`
     ),
-  getProductListByShop: (
+}
+
+export const sellerProductApi = {
+  getMyShopProducts: (
     shopId: string,
     params?: { page?: number; size?: number; sort?: string }
   ) =>
     apiClient.get<PageResponse<ProductInfoResponse>>(
-      `/catalog-service/api/v1/shops/${shopId}/products`,
+      `/catalog-service/api/v1/seller/shops/${shopId}/products`,
       { params }
     ),
   createProduct: (shopId: string, data: ProductRegisterRequest) =>
-    apiClient.post(`/catalog-service/api/v1/shops/${shopId}/products`, data),
+    apiClient.post(
+      `/catalog-service/api/v1/seller/shops/${shopId}/products`,
+      data
+    ),
   updateProduct: (productId: string, data: ProductModifyRequest) =>
-    apiClient.put(`/catalog-service/api/v1/shops/products/${productId}`, data),
+    apiClient.put(`/catalog-service/api/v1/seller/products/${productId}`, data),
   updateProductStatus: (productId: string, status: StatusRequest) =>
     apiClient.patch(
-      `/catalog-service/api/v1/shops/products/${productId}/status`,
+      `/catalog-service/api/v1/seller/products/${productId}/status`,
       status
     ),
   deleteProduct: (productId: string) =>
-    apiClient.delete(`/catalog-service/api/v1/shops/products/${productId}`),
+    apiClient.delete(`/catalog-service/api/v1/seller/products/${productId}`),
   getPresignedUrl: (data: ProductPresignedRequest) =>
     apiClient.post<ProductPresignedResponse>(
-      `/catalog-service/api/v1/shops/products/images/presigned-url`,
+      `/catalog-service/api/v1/seller/products/images/presigned-urls`,
       data
     ),
 }
@@ -118,7 +124,7 @@ export const searchApi = {
     size?: number
   }) =>
     apiClient.get<PageResponse<ProductSearchResponse>>(
-      "/catalog-service/api/v1/search",
+      "/catalog-service/api/v1/products/search",
       { params }
     ),
 }

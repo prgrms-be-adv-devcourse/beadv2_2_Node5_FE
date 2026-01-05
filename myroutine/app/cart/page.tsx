@@ -27,7 +27,9 @@ type CartItem = {
   thumbnailUrl?: string
 }
 
-const normalizeCartItem = (item: Partial<CartItemInfo> | any): CartItem | null => {
+const normalizeCartItem = (
+  item: Partial<CartItemInfo> | any
+): CartItem | null => {
   const productId = item?.productId ?? item?.id ?? item?.product?.id
   if (!productId) return null
 
@@ -36,8 +38,8 @@ const normalizeCartItem = (item: Partial<CartItemInfo> | any): CartItem | null =
     typeof rawPrice === "string"
       ? Number(rawPrice)
       : Number.isFinite(rawPrice)
-        ? (rawPrice as number)
-        : 0
+      ? (rawPrice as number)
+      : 0
 
   return {
     id: item?.id,
@@ -74,7 +76,7 @@ export default function CartPage() {
     const fetchCart = async () => {
       setCartError(null)
       try {
-        const cart = await cartApi.getCart()
+        const cart = await cartApi.getCartItems()
         const list = Array.isArray(cart?.content) ? cart.content : []
         const normalized = list
           .map((item) => normalizeCartItem(item))
@@ -339,7 +341,9 @@ export default function CartPage() {
                     />
                     <div className="w-20 h-20 bg-white rounded-lg overflow-hidden border border-border/60">
                       <img
-                        src={getImageUrl(item.thumbnailUrl) || "/placeholder.svg"}
+                        src={
+                          getImageUrl(item.thumbnailUrl) || "/placeholder.svg"
+                        }
                         alt={productName}
                         className="w-full h-full object-contain"
                       />
@@ -389,7 +393,9 @@ export default function CartPage() {
               <h2 className="text-xl font-bold text-foreground">주문 요약</h2>
               <div className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">상품 금액</span>
-                <span className="font-semibold text-foreground">₩{total.toLocaleString()}</span>
+                <span className="font-semibold text-foreground">
+                  ₩{total.toLocaleString()}
+                </span>
               </div>
               <div className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">배송비</span>

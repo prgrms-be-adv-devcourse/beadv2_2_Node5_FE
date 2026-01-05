@@ -17,18 +17,20 @@ export interface CartItemRequest {
 }
 
 export const cartApi = {
-  getCart: () =>
-    apiClient.get<PageResponse<CartItemInfo>>("/catalog-service/api/v1/carts"),
-  addToCart: (data: CartItemRequest) =>
-    apiClient.post<CartItemInfo>("/catalog-service/api/v1/carts", data),
+  getCartItems: () =>
+    apiClient.get<PageResponse<CartItemInfo>>(
+      "/catalog-service/api/v1/carts/items"
+    ),
+  addCartItem: (data: CartItemRequest) =>
+    apiClient.post<CartItemInfo>("/catalog-service/api/v1/carts/items", data),
   updateCartItem: (cartItemId: string, quantity: number) =>
     apiClient.patch<CartItemInfo>(
-      `/catalog-service/api/v1/carts/${cartItemId}`,
+      `/catalog-service/api/v1/carts/items/${cartItemId}`,
       {
         quantity,
       }
     ),
   removeCartItem: (cartItemId: string) =>
-    apiClient.delete(`/catalog-service/api/v1/carts/${cartItemId}`),
+    apiClient.delete(`/catalog-service/api/v1/carts/items/${cartItemId}`),
   clearCart: () => apiClient.delete("/catalog-service/api/v1/carts"),
 }
