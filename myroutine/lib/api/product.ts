@@ -128,3 +128,10 @@ export const searchApi = {
       { params }
     ),
 }
+
+export const autocompleteApi = {
+  autocomplete: (params: { keyword: string }) =>
+    apiClient.get<string[]>("/catalog-service/api/v1/products/autocomplete", {
+      params,
+    }),
+}

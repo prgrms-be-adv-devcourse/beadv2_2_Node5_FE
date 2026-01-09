@@ -10,6 +10,7 @@ import { apiClient } from "@/lib/api-client"
 import { authApi } from "@/lib/api/auth"
 import { requireClientLogin } from "@/lib/auth-guard"
 import { useTheme } from "next-themes"
+import { autocompleteApi } from "@/lib/api/product"
 
 export default function Header() {
   const router = useRouter()
@@ -18,6 +19,11 @@ export default function Header() {
   const [searchQuery, setSearchQuery] = useState("")
   const { resolvedTheme, setTheme } = useTheme()
   const [isThemeReady, setIsThemeReady] = useState(false)
+  const [suggestions, setSuggestions] = useState<string[]>([])
+  const [activeSearchField, setActiveSearchField] = useState<
+    "desktop" | "mobile" | null
+  >(null)
+  const [isAutocompleteLoading, setIsAutocompleteLoading] = useState(false)
 
   useEffect(() => {
     setIsThemeReady(true)
@@ -71,6 +77,84 @@ export default function Header() {
     router.push(`/?q=${encodeURIComponent(keyword)}`)
   }
 
+  useEffect(() => {
+    const keyword = searchQuery.trim()
+    if (!keyword) {
+      setSuggestions([])
+      setIsAutocompleteLoading(false)
+      return
+    }
+
+    let isActive = true
+    setIsAutocompleteLoading(true)
+    const timer = window.setTimeout(async () => {
+      try {
+        const { data } = await autocompleteApi.autocomplete({ keyword })
+        if (!isActive) return
+        setSuggestions(Array.isArray(data) ? data : [])
+      } catch (error: any) {
+        if (!isActive) return
+        console.error("Autocomplete error:", error)
+        setSuggestions([])
+      } finally {
+        if (isActive) {
+          setIsAutocompleteLoading(false)
+        }
+      }
+    }, 300)
+
+    return () => {
+      isActive = false
+      window.clearTimeout(timer)
+    }
+  }, [searchQuery])
+
+  const handleSuggestionSelect = (keyword: string) => {
+    setSearchQuery(keyword)
+    setActiveSearchField(null)
+    router.push(`/?q=${encodeURIComponent(keyword)}`)
+  }
+
+  const handleSearchBlur = () => {
+    window.setTimeout(() => {
+      setActiveSearchField(null)
+    }, 150)
+  }
+
+  const renderAutocomplete = (field: "desktop" | "mobile") => {
+    if (
+      activeSearchField !== field ||
+      (!isAutocompleteLoading && suggestions.length === 0)
+    ) {
+      return null
+    }
+
+    return (
+      <div className="absolute left-0 right-0 top-full z-50 mt-1 rounded-md border border-input bg-background shadow-lg">
+        {isAutocompleteLoading ? (
+          <div className="px-3 py-2 text-sm text-muted-foreground">
+            검색 중...
+          </div>
+        ) : (
+          <ul className="max-h-60 overflow-auto py-1 text-sm">
+            {suggestions.map((suggestion) => (
+              <li key={suggestion}>
+                <button
+                  type="button"
+                  className="w-full px-3 py-2 text-left hover:bg-muted"
+                  onMouseDown={(event) => event.preventDefault()}
+                  onClick={() => handleSuggestionSelect(suggestion)}
+                >
+                  {suggestion}
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    )
+  }
+
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-card">
       <div className="container mx-auto px-4">
@@ -96,6 +180,8 @@ export default function Header() {
                 placeholder="상품 검색..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
+                onFocus={() => setActiveSearchField("desktop")}
+                onBlur={handleSearchBlur}
                 className="w-full h-10 rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
               />
               <button
@@ -104,6 +190,7 @@ export default function Header() {
               >
                 <Search className="w-4 h-4" />
               </button>
+              {renderAutocomplete("desktop")}
             </div>
           </form>
 
@@ -175,13 +262,18 @@ export default function Header() {
         {/* Mobile Search */}
         <div className="md:hidden pb-4">
           <form onSubmit={handleSearch} className="flex gap-2">
-            <input
-              type="text"
-              placeholder="상품 검색..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="flex-1 h-10 rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-            />
+            <div className="relative flex-1">
+              <input
+                type="text"
+                placeholder="상품 검색..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onFocus={() => setActiveSearchField("mobile")}
+                onBlur={handleSearchBlur}
+                className="w-full h-10 rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+              />
+              {renderAutocomplete("mobile")}
+            </div>
             <button
               type="submit"
               className="p-2 text-muted-foreground hover:text-primary"
