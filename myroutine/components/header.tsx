@@ -89,7 +89,7 @@ export default function Header() {
     setIsAutocompleteLoading(true)
     const timer = window.setTimeout(async () => {
       try {
-        const { data } = await autocompleteApi.autocomplete({ keyword })
+        const data = await autocompleteApi.autocomplete({ keyword })
         if (!isActive) return
         setSuggestions(Array.isArray(data) ? data : [])
       } catch (error: any) {
