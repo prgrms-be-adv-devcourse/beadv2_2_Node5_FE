@@ -1,16 +1,18 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, type FormEvent } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import { ArrowDown, ArrowUp, Plus, ChevronDown, ChevronUp } from "lucide-react"
 import { paymentApi, type PaymentInfo, PaymentStatus } from "@/lib/api/payment"
 import {
   walletApi,
-  type WalletDepositInfo,
-  type WalletWithdrawInfo,
+  type WalletLogInfo,
+  WalletTransactionLogType,
 } from "@/lib/api/wallet"
 import { WalletConsentModal } from "./wallet-consent-modal"
 
@@ -21,6 +23,7 @@ interface Transaction {
   description: string
   date?: string
   status?: string
+  balanceAfter?: number
 }
 
 type TransactionFilter = "all" | "use" | "charge"
@@ -55,33 +58,64 @@ export default function WalletTab() {
   >(null)
   const [walletNotFound, setWalletNotFound] = useState(false)
   const [isCreatingWallet, setIsCreatingWallet] = useState(false)
+  const [transferAccountNo, setTransferAccountNo] = useState("")
+  const [transferAmount, setTransferAmount] = useState("")
+  const [isTransferring, setIsTransferring] = useState(false)
+  const [transferError, setTransferError] = useState<string | null>(null)
+  const [showTransferModal, setShowTransferModal] = useState(false)
+  const [showTransferResponseModal, setShowTransferResponseModal] =
+    useState(false)
+  const [transferResponseMessage, setTransferResponseMessage] = useState<
+    string | null
+  >(null)
+  const [transferResponseType, setTransferResponseType] = useState<
+    "success" | "error"
+  >("success")
+  const getTransactionDescription = (type: WalletTransactionLogType) => {
+    switch (type) {
+      case WalletTransactionLogType.ORDER:
+        return "결제"
+      case WalletTransactionLogType.ORDER_REFUND:
+        return "결제 환불"
+      case WalletTransactionLogType.SETTLEMENT:
+        return "정산"
+      case WalletTransactionLogType.TRANSFER:
+        return "이체"
+      case WalletTransactionLogType.CHARGE:
+        return "충전"
+      case WalletTransactionLogType.CHARGE_CANCEL:
+        return "충전 취소"
+      default:
+        return "거래"
+    }
+  }
 
-  const mergeTransactions = (
-    deposits: Array<WalletDepositInfo & { createdAt?: string }>,
-    withdraws: Array<WalletWithdrawInfo & { createdAt?: string }>
-  ): Transaction[] => {
-    const depositTransactions: Transaction[] = deposits.map((item) => ({
-      id: `deposit-${item.id}`,
-      type: "deposit",
+  const getTransactionDirection = (type: WalletTransactionLogType) => {
+    const withdrawTypes = new Set<WalletTransactionLogType>([
+      WalletTransactionLogType.ORDER,
+      WalletTransactionLogType.TRANSFER,
+      WalletTransactionLogType.CHARGE_CANCEL,
+    ])
+    const depositTypes = new Set<WalletTransactionLogType>([
+      WalletTransactionLogType.CHARGE,
+      WalletTransactionLogType.SETTLEMENT,
+      WalletTransactionLogType.ORDER_REFUND,
+    ])
+    if (withdrawTypes.has(type)) return "withdraw"
+    return depositTypes.has(type) ? "deposit" : "withdraw"
+  }
+
+  const mapTransactionLog = (item: WalletLogInfo, index: number): Transaction => {
+    const direction = getTransactionDirection(item.type)
+    return {
+      id: `${item.type}-${item.createdAt}-${index}`,
+      type: direction,
       amount: item.amount,
-      description: item.settlementId ? "정산" : "입금",
+      description: getTransactionDescription(item.type),
       date: item.createdAt,
-    }))
-
-    const withdrawTransactions: Transaction[] = withdraws.map((item) => ({
-      id: `withdraw-${item.id}`,
-      type: "withdraw",
-      amount: item.amount,
-      description: "결제",
-      date: item.createdAt,
-      status: item.state,
-    }))
-
-    return [...depositTransactions, ...withdrawTransactions].sort((a, b) => {
-      const dateA = a.date ? new Date(a.date).getTime() : 0
-      const dateB = b.date ? new Date(b.date).getTime() : 0
-      return dateB - dateA
-    })
+      status: item.status,
+      balanceAfter: item.balanceAfter,
+    }
   }
 
   const formatDate = (date?: string) => {
@@ -147,49 +181,33 @@ export default function WalletTab() {
       setIsLoading(true)
       setError(null)
       try {
-        const start = page * PAGE_SIZE
-        const end = start + PAGE_SIZE
-        let mergedTransactions: Transaction[] = []
-
         if (selectedFilter === "all") {
-          const [deposits, withdraws] = await Promise.all([
-            walletApi.getDeposits(0, PAGE_SIZE * (page + 1), "createdAt,desc"),
-            walletApi.getWithdraws(0, PAGE_SIZE * (page + 1), "createdAt,desc"),
-          ])
-
-          mergedTransactions = mergeTransactions(
-            deposits?.content || [],
-            withdraws?.content || []
-          )
-          setTotalCount(
-            (deposits?.totalElements || 0) + (withdraws?.totalElements || 0)
-          )
-        } else if (selectedFilter === "charge") {
-          const deposits = await walletApi.getDeposits(
+          const logs = await walletApi.getTransactionLogs(
             page,
             PAGE_SIZE,
             "createdAt,desc"
           )
-          mergedTransactions = mergeTransactions(deposits?.content || [], [])
-          setTotalCount(deposits?.totalElements || mergedTransactions.length)
+          const items = logs?.content || []
+          setTransactions(items.map(mapTransactionLog))
+          setTotalCount(logs?.totalElements || items.length)
+        } else if (selectedFilter === "charge") {
+          const deposits = await walletApi.getDepositLogs(
+            page,
+            PAGE_SIZE,
+            "createdAt,desc"
+          )
+          const items = deposits?.content || []
+          setTransactions(items.map(mapTransactionLog))
+          setTotalCount(deposits?.totalElements || items.length)
         } else {
           const withdraws = await walletApi.getWithdraws(
             page,
             PAGE_SIZE,
             "createdAt,desc"
           )
-          mergedTransactions = mergeTransactions([], withdraws?.content || [])
-          setTotalCount(withdraws?.totalElements || mergedTransactions.length)
-        }
-
-        if (selectedFilter === "all") {
-          if (mergedTransactions.length <= start && start > 0) {
-            setPage(0)
-            return
-          }
-          setTransactions(mergedTransactions.slice(start, end))
-        } else {
-          setTransactions(mergedTransactions)
+          const items = withdraws?.content || []
+          setTransactions(items.map(mapTransactionLog))
+          setTotalCount(withdraws?.totalElements || items.length)
         }
       } catch (err: any) {
         setError(err?.message || "거래 내역을 불러오지 못했어요.")
@@ -325,14 +343,101 @@ export default function WalletTab() {
     }
   }
 
+  const refreshWalletBalance = async () => {
+    try {
+      const wallet = await walletApi.getWallet()
+      if (typeof wallet?.balance === "number") {
+        setBalance(wallet.balance)
+      }
+    } catch (err: any) {
+      setWalletError(err?.message || "잔액을 불러오지 못했어요.")
+    }
+  }
+
+  const handleTransfer = async (event: FormEvent) => {
+    event.preventDefault()
+    setTransferError(null)
+
+    if (walletNotFound) {
+      setTransferError("지갑을 먼저 생성해주세요.")
+      return
+    }
+
+    const trimmedAccountNo = transferAccountNo.trim()
+    if (!trimmedAccountNo) {
+      setTransferError("받는 계좌번호를 입력해주세요.")
+      return
+    }
+    if (!/^\d{7,14}$/.test(trimmedAccountNo)) {
+      setTransferError("계좌번호는 7~14자리 숫자만 입력해주세요.")
+      return
+    }
+
+    if (!transferAmount.trim()) {
+      setTransferError("이체할 금액을 입력해주세요.")
+      return
+    }
+    const amountValue = Number(transferAmount)
+    const normalizedAmount = Number.isFinite(amountValue)
+      ? Math.floor(amountValue)
+      : NaN
+    if (!Number.isFinite(normalizedAmount) || normalizedAmount <= 0) {
+      setTransferError("이체할 금액을 올바르게 입력해주세요.")
+      return
+    }
+
+    if (normalizedAmount > balance) {
+      setTransferError("잔액이 부족합니다.")
+      return
+    }
+
+    setIsTransferring(true)
+    try {
+      const result = await walletApi.transferWallet({
+        toAccountNo: trimmedAccountNo,
+        transferAmount: String(normalizedAmount),
+      })
+      setTransferResponseMessage(result?.message || "이체가 완료되었습니다.")
+      setTransferResponseType("success")
+      setTransferAccountNo("")
+      setTransferAmount("")
+      await refreshWalletBalance()
+      setShowTransferModal(false)
+      setShowTransferResponseModal(true)
+    } catch (err: any) {
+      setTransferResponseMessage(err?.message || "이체에 실패했습니다.")
+      setTransferResponseType("error")
+      setShowTransferModal(false)
+      setShowTransferResponseModal(true)
+    } finally {
+      setIsTransferring(false)
+    }
+  }
+
   return (
     <div className="space-y-8">
       {/* Balance Card */}
       <Card className="p-8 bg-gradient-to-br from-primary/10 to-secondary/10 border-primary/20">
         <p className="text-muted-foreground mb-2">현재 잔액</p>
-        <p className="text-5xl font-bold text-primary mb-6">
-          ₩{balance.toLocaleString()}
-        </p>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+          <p className="text-5xl font-bold text-primary">
+            ₩{balance.toLocaleString()}
+          </p>
+          <Button
+            variant="outline"
+            onClick={() => {
+              setTransferError(null)
+              setTransferResponseMessage(null)
+              setShowTransferResponseModal(false)
+              setShowTransferModal(true)
+            }}
+            disabled={
+              isWalletLoading || !!walletError || walletNotFound || isTransferring
+            }
+          >
+            이체하기
+          </Button>
+        </div>
         {error && <p className="text-sm text-red-600 mb-2">{error}</p>}
         {walletError && (
           <p className="text-sm text-red-600 mb-2">{walletError}</p>
@@ -381,7 +486,7 @@ export default function WalletTab() {
               setPage(0)
             }}
           >
-            사용
+            출금
           </Button>
           <Button
             size="sm"
@@ -391,7 +496,7 @@ export default function WalletTab() {
               setPage(0)
             }}
           >
-            정산
+            입금
           </Button>
         </div>
         {isLoading && (
@@ -435,6 +540,12 @@ export default function WalletTab() {
                       >
                         {tx.description}
                       </p>
+                      {typeof tx.balanceAfter === "number" && (
+                        <p className="text-xs text-muted-foreground">
+                          {tx.type === "withdraw" ? "출금 후" : "입금 후"} 잔액 ₩
+                          {tx.balanceAfter.toLocaleString()}
+                        </p>
+                      )}
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
@@ -668,6 +779,114 @@ export default function WalletTab() {
                   </div>
                 </div>
               )}
+            </div>
+          </Card>
+        </div>
+      )}
+
+      {showTransferModal && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <Card className="w-full max-w-lg">
+            <form onSubmit={handleTransfer} className="p-6 space-y-4">
+              <div className="flex items-center justify-between gap-2">
+                <h3 className="text-xl font-bold text-foreground">
+                  예치금 이체
+                </h3>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowTransferModal(false)}
+                  disabled={isTransferring}
+                >
+                  닫기
+                </Button>
+              </div>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="transfer-account">받는 계좌번호</Label>
+                  <Input
+                    id="transfer-account"
+                    placeholder="계좌번호를 입력하세요"
+                    value={transferAccountNo}
+                    onChange={(event) => setTransferAccountNo(event.target.value)}
+                    pattern="^[0-9]{7,14}$"
+                    inputMode="numeric"
+                    disabled={isTransferring || isWalletLoading}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="transfer-amount">이체 금액</Label>
+                  <Input
+                    id="transfer-amount"
+                    type="number"
+                    min="1"
+                    inputMode="numeric"
+                    placeholder="금액을 입력하세요"
+                    value={transferAmount}
+                    onChange={(event) => setTransferAmount(event.target.value)}
+                    disabled={isTransferring || isWalletLoading}
+                  />
+                </div>
+              </div>
+              {transferError && (
+                <p className="text-sm text-red-600">{transferError}</p>
+              )}
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-sm text-muted-foreground">
+                  현재 잔액 ₩{balance.toLocaleString()}
+                </p>
+                <Button
+                  type="submit"
+                  disabled={
+                    isTransferring ||
+                    isWalletLoading ||
+                    !!walletError ||
+                    walletNotFound
+                  }
+                >
+                  {isTransferring ? "이체 중..." : "이체하기"}
+                </Button>
+              </div>
+            </form>
+          </Card>
+        </div>
+      )}
+
+      {showTransferResponseModal && transferResponseMessage && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <Card className="w-full max-w-md">
+            <div className="p-6 space-y-4">
+              <div className="flex items-center justify-between gap-2">
+                <h3 className="text-xl font-bold text-foreground">
+                  이체 결과
+                </h3>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowTransferResponseModal(false)}
+                >
+                  닫기
+                </Button>
+              </div>
+              <p
+                className={`text-sm ${
+                  transferResponseType === "success"
+                    ? "text-green-600"
+                    : "text-red-600"
+                }`}
+              >
+                {transferResponseMessage}
+              </p>
+              <div className="flex justify-end">
+                <Button
+                  type="button"
+                  onClick={() => setShowTransferResponseModal(false)}
+                >
+                  확인
+                </Button>
+              </div>
             </div>
           </Card>
         </div>

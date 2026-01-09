@@ -21,7 +21,6 @@ export default function WalletChargePage() {
     "idle" | "processing" | "success" | "failure"
   >("idle")
   const [message, setMessage] = useState<string | null>(null)
-  const [debug, setDebug] = useState<string | null>(null)
 
   const loadTossPayments = async () => {
     if (typeof window === "undefined")
@@ -76,11 +75,6 @@ export default function WalletChargePage() {
     const handleResult = async () => {
       setIsProcessing(true)
       setStatus("processing")
-      setDebug(
-        `결제 콜백: result=${result}, orderId=${orderId}, paymentKey=${paymentKey}, amount=${
-          amountParam || ""
-        }`
-      )
       try {
         if (result === "success") {
           if (!paymentKey || !orderId || !amountValue) {
@@ -92,7 +86,7 @@ export default function WalletChargePage() {
             amount: amountValue,
           })
           setStatus("success")
-          setMessage("결제가 완료되었습니다.")
+          setMessage(null)
         } else {
           await paymentApi.failurePayment({
             paymentKey,
@@ -103,7 +97,17 @@ export default function WalletChargePage() {
             rawPayload,
           })
           setStatus("failure")
-          setMessage(failMessage || "결제가 실패했습니다.")
+          console.warn(
+            "결제 실패:",
+            failMessage || "결제 실패",
+            "orderId=",
+            orderId,
+            "paymentKey=",
+            paymentKey,
+            "amount=",
+            amountParam || ""
+          )
+          setMessage(null)
         }
       } catch (err: any) {
         setStatus("failure")
@@ -126,7 +130,6 @@ export default function WalletChargePage() {
     setError(null)
     setStatus("processing")
     setMessage("결제창을 여는 중입니다...")
-    setDebug(null)
 
     try {
       const toss = await loadTossPayments()
@@ -177,8 +180,7 @@ export default function WalletChargePage() {
         <Card className="p-6 md:p-8 space-y-4">
           <h1 className="text-3xl font-bold text-foreground">예치금 충전</h1>
           <p className="text-sm text-muted-foreground">
-            금액을 입력하고 결제를 진행하세요. 결제 성공/실패 결과는 이
-            페이지에서 바로 처리됩니다.
+            금액을 입력하고 결제를 진행하세요.
           </p>
 
           {message && (
@@ -194,7 +196,6 @@ export default function WalletChargePage() {
               {status === "processing" ? "결제 확인 중..." : message}
             </div>
           )}
-          {debug && <p className="text-xs text-blue-600 break-all">{debug}</p>}
           {error && <p className="text-sm text-red-600">{error}</p>}
 
           <div className="space-y-4">

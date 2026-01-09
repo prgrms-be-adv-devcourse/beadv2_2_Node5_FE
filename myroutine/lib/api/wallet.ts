@@ -6,42 +6,70 @@ export interface WalletInfo {
   balance: number
 }
 
-export interface WalletDepositInfo {
-  id: string
-  memberId: string
-  settlementId: string
+export interface WalletLogInfo {
+  type: WalletTransactionLogType
   amount: number
+  balanceAfter: number
+  status: WalletTransactionLogStatus
+  createdAt: string
 }
 
-export interface WalletWithdrawInfo {
-  id: string
-  memberId: string
-  orderId: string
-  amount: number
-  state: WalletWithdrawLogState
+export enum WalletTransactionLogType {
+  ORDER = "ORDER",
+  ORDER_REFUND = "ORDER_REFUND",
+  SETTLEMENT = "SETTLEMENT",
+  TRANSFER = "TRANSFER",
+  CHARGE = "CHARGE",
+  CHARGE_CANCEL = "CHARGE_CANCEL",
 }
 
-export enum WalletWithdrawLogState {
-  PAID = "PAID",
+export enum WalletTransactionLogStatus {
+  COMPLETED = "COMPLETED",
   REFUNDED = "REFUNDED",
+  CANCELED = "CANCELED",
+}
+
+export interface WalletTransferRequest {
+  toAccountNo: string
+  transferAmount: string
+}
+
+export interface WalletTransferInfo {
+  ammount: number
+  transactionId: string
+  message: string
+  requestedAt: string
+  approvedAt: string
 }
 
 export const walletApi = {
   createWallet: () =>
     apiClient.post<WalletInfo>(`/billing-service/api/v1/wallets`),
   getWallet: () => apiClient.get<WalletInfo>(`/billing-service/api/v1/wallets`),
-  getDeposits: (page = 0, size = 10, sort = "createdAt,desc") =>
-    apiClient.get<PageResponse<WalletDepositInfo>>(
-      `/billing-service/api/v1/wallets/deposits`,
+  getTransactionLogs: (page = 0, size = 10, sort = "createdAt,desc") =>
+    apiClient.get<PageResponse<WalletLogInfo>>(
+      `/billing-service/api/v1/wallets/transactions/all`,
+      {
+        params: { page, size, sort },
+      }
+    ),
+  getDepositLogs: (page = 0, size = 10, sort = "createdAt,desc") =>
+    apiClient.get<PageResponse<WalletLogInfo>>(
+      `/billing-service/api/v1/wallets/transactions/deposits`,
       {
         params: { page, size, sort },
       }
     ),
   getWithdraws: (page = 0, size = 10, sort = "createdAt,desc") =>
-    apiClient.get<PageResponse<WalletWithdrawInfo>>(
-      `/billing-service/api/v1/wallets/withdraws`,
+    apiClient.get<PageResponse<WalletLogInfo>>(
+      `/billing-service/api/v1/wallets/transactions/withdraws`,
       {
         params: { page, size, sort },
       }
+    ),
+  transferWallet: (data: WalletTransferRequest) =>
+    apiClient.post<WalletTransferInfo>(
+      `/billing-service/api/v1/wallets/transfer`,
+      data
     ),
 }
