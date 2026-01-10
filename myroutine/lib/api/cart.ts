@@ -32,5 +32,5 @@ export const cartApi = {
     ),
   removeCartItem: (cartItemId: string) =>
     apiClient.delete(`/catalog-service/api/v1/carts/items/${cartItemId}`),
-  clearCart: () => apiClient.delete("/catalog-service/api/v1/carts"),
+  clearCart: () => apiClient.delete("/catalog-service/api/v1/carts/items"),
 }
