@@ -45,13 +45,13 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
+    <main className="flex-1 flex items-start md:items-center justify-center p-4 pt-10 md:pt-4">
       <Card className="w-full max-w-md">
-        <div className="p-8">
+        <div className="p-6 md:p-8">
           {/* Logo */}
           <Link
             href="/"
-            className="flex items-center gap-2 mb-8 justify-center"
+            className="flex items-center gap-2 mb-6 justify-center"
           >
             <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
               <span className="text-primary-foreground font-bold text-lg">
@@ -65,7 +65,7 @@ export default function LoginPage() {
           <h1 className="text-2xl font-bold text-foreground mb-2 text-center">
             시작하기
           </h1>
-          <p className="text-muted-foreground text-center mb-8">
+          <p className="text-muted-foreground text-center mb-6">
             로그인하거나 계정을 만드세요
           </p>
 
@@ -97,6 +97,6 @@ export default function LoginPage() {
           </div>
         </div>
       </Card>
-    </div>
+    </main>
   )
 }

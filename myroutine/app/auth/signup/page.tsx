@@ -140,12 +140,12 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
+    <main className="flex-1 flex items-start md:items-center justify-center p-4 pt-10 md:pt-4">
       <Card className="w-full max-w-md">
-        <div className="p-8">
+        <div className="p-6 md:p-8">
           <Link
             href="/"
-            className="flex items-center gap-2 mb-8 justify-center"
+            className="flex items-center gap-2 mb-6 justify-center"
           >
             <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
               <span className="text-primary-foreground font-bold text-lg">
@@ -158,7 +158,7 @@ export default function SignupPage() {
           <h1 className="text-2xl font-bold text-foreground mb-2 text-center">
             회원가입
           </h1>
-          <p className="text-muted-foreground text-center mb-8">
+          <p className="text-muted-foreground text-center mb-6">
             구독을 시작하기 위해 계정을 완성하세요
           </p>
 
@@ -367,6 +367,6 @@ export default function SignupPage() {
           )}
         </div>
       </Card>
-    </div>
+    </main>
   )
 }

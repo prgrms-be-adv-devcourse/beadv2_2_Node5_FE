@@ -9,13 +9,12 @@ import AdminShell from "@/components/admin-shell"
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const isAdmin = pathname?.startsWith("/admin")
-
   if (isAdmin) {
     return <AdminShell>{children}</AdminShell>
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-background">
+    <div className="flex flex-col min-h-screen min-h-[100svh] bg-background">
       <Header />
       {children}
       <Footer />

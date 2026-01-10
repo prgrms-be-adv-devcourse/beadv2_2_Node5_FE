@@ -35,7 +35,7 @@ export default function DashboardPage() {
         </h1>
 
         <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 mb-8">
+          <TabsList className="grid h-auto w-full grid-cols-2 gap-2 md:h-9 md:grid-cols-5 mb-8">
             <TabsTrigger value="info">내 정보</TabsTrigger>
             <TabsTrigger value="wallet">지갑</TabsTrigger>
             <TabsTrigger value="order">내 주문</TabsTrigger>

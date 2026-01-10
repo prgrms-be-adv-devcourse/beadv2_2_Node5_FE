@@ -1,7 +1,8 @@
 "use client"
+
 export default function Footer() {
   return (
-    <footer className="border-t border-border bg-card mt-16">
+    <footer className="border-t border-border bg-card mt-8 pb-[env(safe-area-inset-bottom,0px)]">
       <div className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
           <div>
