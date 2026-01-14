@@ -359,6 +359,18 @@ export default function ProductDetailPage() {
             {error && <p className="text-sm text-red-600 mt-2">{error}</p>}
           </Card>
         </div>
+        {reviewSummary && (
+          <div className="mt-8">
+            <Card className="p-6 md:p-8">
+              <h3 className="text-2xl font-bold text-foreground mb-4">
+                리뷰 요약
+              </h3>
+              <p className="text-foreground leading-relaxed whitespace-pre-line">
+                {reviewSummary}
+              </p>
+            </Card>
+          </div>
+        )}
         <div className="mt-8">
           <Card className="p-6 md:p-8 space-y-6">
             <div className="flex flex-col gap-2">
@@ -439,18 +451,6 @@ export default function ProductDetailPage() {
             )}
           </Card>
         </div>
-        {reviewSummary && (
-          <div className="mt-8">
-            <Card className="p-6 md:p-8">
-              <h3 className="text-2xl font-bold text-foreground mb-4">
-                리뷰 요약
-              </h3>
-              <p className="text-foreground leading-relaxed whitespace-pre-line">
-                {reviewSummary}
-              </p>
-            </Card>
-          </div>
-        )}
       </div>
 
       {showOrderModal && (
