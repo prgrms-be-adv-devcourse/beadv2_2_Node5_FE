@@ -24,6 +24,7 @@ export enum MemberStatus {
 export interface MemberInfoAdminResponse {
   id: string
   name: string
+  nickname: string
   email: string
   phoneNumber: string
   address: string

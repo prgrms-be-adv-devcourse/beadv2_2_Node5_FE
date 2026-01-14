@@ -15,7 +15,7 @@ import WalletTab from "@/components/dashboard/wallet-tab"
 
 type MemberFormState = Pick<
   MemberInfoResponse,
-  "id" | "name" | "email" | "phoneNumber" | "address"
+  "id" | "name" | "nickname" | "email" | "phoneNumber" | "address"
 >
 
 export default function MyInfoTab() {
@@ -23,6 +23,7 @@ export default function MyInfoTab() {
   const [isEditing, setIsEditing] = useState(false)
   const [formData, setFormData] = useState<MemberFormState>({
     name: "",
+    nickname: "",
     email: "",
     phoneNumber: "",
     address: "",
@@ -42,6 +43,7 @@ export default function MyInfoTab() {
         const data = await memberApi.getMe()
         setFormData({
           name: data?.name || "",
+          nickname: data?.nickname || "",
           email: data?.email || "",
           phoneNumber: data?.phoneNumber || "",
           address: data?.address || "",
@@ -72,6 +74,7 @@ export default function MyInfoTab() {
         : formData.address
       await memberApi.updateMe({
         name: formData.name,
+        nickname: formData.nickname,
         phoneNumber: formData.phoneNumber,
         address: fullAddress,
       })
@@ -132,6 +135,19 @@ export default function MyInfoTab() {
               <Input
                 name="name"
                 value={formData.name}
+                onChange={handleChange}
+                disabled={!isEditing || isSaving || isLoading}
+                className="h-10"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-bold text-foreground mb-2">
+                닉네임
+              </label>
+              <Input
+                name="nickname"
+                value={formData.nickname}
                 onChange={handleChange}
                 disabled={!isEditing || isSaving || isLoading}
                 className="h-10"

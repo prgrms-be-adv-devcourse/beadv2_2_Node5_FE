@@ -17,6 +17,7 @@ export interface OAuthRegisterRequest {
   temporaryToken: string
   email: string
   name: string
+  nickname: string
   phoneNumber: string
   address: string
 }

@@ -29,6 +29,7 @@ export default function SignupPage() {
 
   // Profile state
   const [name, setName] = useState("")
+  const [nickname, setNickname] = useState("")
   const [phoneNumber, setPhoneNumber] = useState("")
   const [address, setAddress] = useState("")
   const [addressDetail, setAddressDetail] = useState("")
@@ -88,7 +89,7 @@ export default function SignupPage() {
   const handleCompleteProfile = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!name || !phoneNumber || !address) {
+    if (!name || !nickname || !phoneNumber || !address) {
       setProfileError("모든 필드를 입력하세요")
       return
     }
@@ -108,6 +109,7 @@ export default function SignupPage() {
         temporaryToken,
         email,
         name,
+        nickname,
         phoneNumber,
         address: fullAddress,
       })
@@ -293,6 +295,27 @@ export default function SignupPage() {
 
               <div>
                 <label
+                  htmlFor="nickname"
+                  className="block text-sm font-bold text-foreground mb-2"
+                >
+                  닉네임
+                </label>
+                <Input
+                  id="nickname"
+                  type="text"
+                  value={nickname}
+                  onChange={(e) => {
+                    setNickname(e.target.value)
+                    setProfileError("")
+                  }}
+                  placeholder="닉네임"
+                  className="h-10"
+                  required
+                />
+              </div>
+
+              <div>
+                <label
                   htmlFor="phone"
                   className="block text-sm font-bold text-foreground mb-2"
                 >
@@ -349,7 +372,9 @@ export default function SignupPage() {
 
               <Button
                 type="submit"
-                disabled={isLoading || !name || !phoneNumber || !address}
+                disabled={
+                  isLoading || !name || !nickname || !phoneNumber || !address
+                }
                 className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-bold"
               >
                 {isLoading ? "가입 중..." : "회원가입 완료"}

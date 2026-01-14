@@ -3,6 +3,7 @@ import { apiClient } from "../api-client"
 export interface MemberInfoResponse {
   id: string
   name: string
+  nickname: string
   email: string
   phoneNumber: string
   address: string
@@ -10,6 +11,7 @@ export interface MemberInfoResponse {
 
 export interface MemberModifyRequest {
   name: string
+  nickname: string
   phoneNumber: string
   address: string
 }

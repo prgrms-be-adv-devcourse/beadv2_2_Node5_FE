@@ -558,6 +558,9 @@ export default function AdminPage() {
                               {member.name}
                             </p>
                             <p className="text-sm text-muted-foreground">
+                              닉네임: {member.nickname || "-"}
+                            </p>
+                            <p className="text-sm text-muted-foreground">
                               {member.email}
                             </p>
                             <p className="text-xs text-muted-foreground">
