@@ -15,7 +15,11 @@ import AddressSearchInput from "@/components/address-search-input"
 import { cartApi } from "@/lib/api/cart"
 import { getImageUrl } from "@/lib/image"
 import { requireClientLogin } from "@/lib/auth-guard"
-import { reviewApi, type ReviewDetailInfo, type ReviewStatisticInfo } from "@/lib/api/review"
+import {
+  reviewApi,
+  type ReviewDetailInfo,
+  type ReviewStatisticInfo,
+} from "@/lib/api/review"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 export default function ProductDetailPage() {
@@ -38,8 +42,12 @@ export default function ProductDetailPage() {
   const [reviewLoading, setReviewLoading] = useState(false)
   const [reviewError, setReviewError] = useState<string | null>(null)
   const [reviewSummary, setReviewSummary] = useState<string | null>(null)
-  const [likingReviewIds, setLikingReviewIds] = useState<Record<string, boolean>>({})
-  const [reviewOrderBy, setReviewOrderBy] = useState<"latest" | "recomended">("latest")
+  const [likingReviewIds, setLikingReviewIds] = useState<
+    Record<string, boolean>
+  >({})
+  const [reviewOrderBy, setReviewOrderBy] = useState<"latest" | "recommended">(
+    "latest"
+  )
 
   const handleAddToCart = () => {
     if (!product?.id && !id) return
@@ -79,35 +87,41 @@ export default function ProductDetailPage() {
 
   useEffect(() => {
     if (!id) return
+    const fetchReviewMeta = async () => {
+      setReviewError(null)
+      try {
+        const summaryData = await reviewApi.getReviewSummary(id)
+        setReviewSummary(summaryData?.summary ?? null)
+      } catch (summaryErr) {
+        setReviewSummary(null)
+      }
+      try {
+        const statData = await reviewApi.getReviewStatistic(id)
+        setReviewStat(statData)
+      } catch (statErr: any) {
+        if (statErr?.status !== 404) {
+          setReviewError(statErr?.message || "리뷰 통계를 불러오지 못했습니다.")
+        }
+        setReviewStat(null)
+      }
+    }
+
+    fetchReviewMeta()
+  }, [id])
+
+  useEffect(() => {
+    if (!id) return
     const fetchReviews = async () => {
       setReviewLoading(true)
       setReviewError(null)
       try {
-        const orderBy = reviewOrderBy === "recomended" ? "recomended" : "latest"
+        const orderBy =
+          reviewOrderBy === "recommended" ? "recommended" : "latest"
         const detailData = await reviewApi.getReviewsDetail(id, orderBy)
         setReviews(detailData?.content ?? [])
-        try {
-          const summaryData = await reviewApi.getReviewSummary(id)
-          setReviewSummary(summaryData?.summary ?? null)
-        } catch (summaryErr) {
-          setReviewSummary(null)
-        }
-        try {
-          const statData = await reviewApi.getReviewStatistic(id)
-          setReviewStat(statData)
-        } catch (statErr: any) {
-          if (statErr?.status !== 404) {
-            setReviewError(
-              statErr?.message || "리뷰 통계를 불러오지 못했습니다."
-            )
-          }
-          setReviewStat(null)
-        }
       } catch (err: any) {
         setReviewError(err?.message || "리뷰 정보를 불러오지 못했습니다.")
-        setReviewStat(null)
         setReviews([])
-        setReviewSummary(null)
       } finally {
         setReviewLoading(false)
       }
@@ -127,7 +141,9 @@ export default function ProductDetailPage() {
     Array.from({ length: 5 }, (_, index) => (
       <span
         key={`star-${index}`}
-        className={index < rating ? "text-yellow-500" : "text-muted-foreground/40"}
+        className={
+          index < rating ? "text-yellow-500" : "text-muted-foreground/40"
+        }
       >
         ★
       </span>
@@ -401,13 +417,13 @@ export default function ProductDetailPage() {
               <Tabs
                 value={reviewOrderBy}
                 onValueChange={(value) =>
-                  setReviewOrderBy(value as "latest" | "recomended")
+                  setReviewOrderBy(value as "latest" | "recommended")
                 }
                 className="w-full md:w-auto"
               >
                 <TabsList className="grid w-full grid-cols-2 md:w-auto">
                   <TabsTrigger value="latest">최신순</TabsTrigger>
-                  <TabsTrigger value="recomended">추천순</TabsTrigger>
+                  <TabsTrigger value="recommended">추천순</TabsTrigger>
                 </TabsList>
               </Tabs>
             </div>
