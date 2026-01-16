@@ -11,6 +11,11 @@ import AddressSearchInput from "@/components/address-search-input"
 import { cartApi, type CartItemInfo } from "@/lib/api/cart"
 import { orderApi, OrderType } from "@/lib/api/order"
 import { getImageUrl } from "@/lib/image"
+import {
+  productApi,
+  recommendationApi,
+  type ProductInfoResponse,
+} from "@/lib/api/product"
 // import {
 //   cartApi,
 //   productApi,
@@ -68,6 +73,13 @@ export default function CartPage() {
   const [recipientName, setRecipientName] = useState("")
   const [recipientAddress, setRecipientAddress] = useState("")
   const [recipientAddressDetail, setRecipientAddressDetail] = useState("")
+  const [recommendedProducts, setRecommendedProducts] = useState<
+    ProductInfoResponse[]
+  >([])
+  const [recommendationError, setRecommendationError] = useState<string | null>(
+    null
+  )
+  const [recommendationLoading, setRecommendationLoading] = useState(false)
   // const [products, setProducts] = useState<Record<string, ProductInfoResponse>>({})
   // const [isLoading, setIsLoading] = useState(true)
   // const [error, setError] = useState<string | null>(null)
@@ -107,6 +119,78 @@ export default function CartPage() {
       cancelled = true
     }
   }, [])
+
+  const total = useMemo(() => {
+    return items.reduce(
+      (sum, item) => sum + (item.price ?? 0) * item.quantity,
+      0
+    )
+  }, [items])
+
+  const recommendationSize = 5
+
+  useEffect(() => {
+    let cancelled = false
+
+    const fetchRecommendations = async () => {
+      const cartProductIds = items.map((item) => item.productId)
+      if (cartProductIds.length === 0) {
+        setRecommendedProducts([])
+        setRecommendationError(null)
+        setRecommendationLoading(false)
+        return
+      }
+
+      setRecommendationLoading(true)
+      setRecommendationError(null)
+
+      try {
+        const recommendation = await recommendationApi.getRecommendedProducts({
+          cartItemProductIds: cartProductIds,
+          withdrawAmount: recommendationSize,
+        })
+        const productIds = Array.isArray(recommendation?.productIds)
+          ? recommendation.productIds
+          : []
+        const filteredIds = productIds.filter(
+          (productId) => !cartProductIds.includes(productId)
+        )
+
+        if (filteredIds.length === 0) {
+          if (!cancelled) {
+            setRecommendedProducts([])
+          }
+          return
+        }
+
+        const products = await Promise.all(
+          filteredIds.map((productId) => productApi.getProductDetail(productId))
+        )
+
+        if (!cancelled) {
+          setRecommendedProducts(
+            products.filter(Boolean) as ProductInfoResponse[]
+          )
+        }
+      } catch (error) {
+        console.error("추천 상품 불러오기 실패", error)
+        if (!cancelled) {
+          setRecommendedProducts([])
+          setRecommendationError("추천 상품을 불러오지 못했습니다.")
+        }
+      } finally {
+        if (!cancelled) {
+          setRecommendationLoading(false)
+        }
+      }
+    }
+
+    fetchRecommendations()
+
+    return () => {
+      cancelled = true
+    }
+  }, [items, recommendationSize])
 
   const toggleSelect = (id: string) => {
     setSelectedIds((prev) =>
@@ -200,13 +284,6 @@ export default function CartPage() {
 
   const allSelected = items.length > 0 && selectedIds.length === items.length
 
-  const total = useMemo(() => {
-    return items.reduce(
-      (sum, item) => sum + (item.price ?? 0) * item.quantity,
-      0
-    )
-  }, [items])
-
   const handleCheckout = async () => {
     if (!recipientName.trim() || !recipientAddress.trim()) {
       setOrderError("수령인 이름과 주소를 입력해주세요.")
@@ -295,101 +372,158 @@ export default function CartPage() {
           </Card>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <Card className="lg:col-span-2 divide-y divide-border">
-              <div className="flex items-center justify-between p-4">
-                <div className="flex items-center gap-2">
-                  <Checkbox
-                    id="select-all"
-                    checked={allSelected}
-                    onCheckedChange={toggleSelectAll}
-                    className="h-5 w-5 border-2 border-primary/70 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
-                  />
-                  <label
-                    htmlFor="select-all"
-                    className="text-sm text-foreground cursor-pointer"
-                  >
-                    전체 선택 ({selectedIds.length}/{items.length})
-                  </label>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={removeSelected}
-                    disabled={selectedIds.length === 0}
-                  >
-                    <Trash2 className="w-4 h-4 mr-2" />
-                    선택 삭제
-                  </Button>
-                  <Button variant="ghost" size="sm" onClick={clearAll}>
-                    전체 삭제
-                  </Button>
-                </div>
-              </div>
-              {items.map((item) => {
-                const productName = item.name || `상품 #${item.productId}`
-                const unitPrice = item.price ?? 0
-
-                return (
-                  <div
-                    key={item.productId}
-                    className="flex items-center gap-4 p-4"
-                  >
+            <div className="lg:col-span-2 space-y-6">
+              <Card className="divide-y divide-border">
+                <div className="flex items-center justify-between p-4">
+                  <div className="flex items-center gap-2">
                     <Checkbox
-                      checked={selectedIds.includes(item.productId)}
-                      onCheckedChange={() => toggleSelect(item.productId)}
-                      aria-label={`${productName} 선택`}
+                      id="select-all"
+                      checked={allSelected}
+                      onCheckedChange={toggleSelectAll}
                       className="h-5 w-5 border-2 border-primary/70 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                     />
-                    <div className="w-20 h-20 bg-white rounded-lg overflow-hidden border border-border/60">
-                      <img
-                        src={
-                          getImageUrl(item.thumbnailUrl) || "/placeholder.svg"
-                        }
-                        alt={productName}
-                        className="w-full h-full object-contain"
+                    <label
+                      htmlFor="select-all"
+                      className="text-sm text-foreground cursor-pointer"
+                    >
+                      전체 선택 ({selectedIds.length}/{items.length})
+                    </label>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={removeSelected}
+                      disabled={selectedIds.length === 0}
+                    >
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      선택 삭제
+                    </Button>
+                    <Button variant="ghost" size="sm" onClick={clearAll}>
+                      전체 삭제
+                    </Button>
+                  </div>
+                </div>
+                {items.map((item) => {
+                  const productName = item.name || `상품 #${item.productId}`
+                  const unitPrice = item.price ?? 0
+
+                  return (
+                    <div
+                      key={item.productId}
+                      className="flex items-center gap-4 p-4"
+                    >
+                      <Checkbox
+                        checked={selectedIds.includes(item.productId)}
+                        onCheckedChange={() => toggleSelect(item.productId)}
+                        aria-label={`${productName} 선택`}
+                        className="h-5 w-5 border-2 border-primary/70 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                       />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-foreground line-clamp-2">
-                        {productName}
-                      </p>
-                      <div className="flex items-center gap-2 mt-2">
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          className="h-8 w-8"
-                          onClick={() => updateQuantity(item.productId, -1)}
-                          aria-label="수량 감소"
-                        >
-                          <Minus className="w-4 h-4" />
-                        </Button>
-                        <span className="w-10 text-center font-semibold">
-                          {item.quantity}
-                        </span>
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          className="h-8 w-8"
-                          onClick={() => updateQuantity(item.productId, 1)}
-                          aria-label="수량 증가"
-                        >
-                          <Plus className="w-4 h-4" />
-                        </Button>
+                      <div className="w-20 h-20 bg-white rounded-lg overflow-hidden border border-border/60">
+                        <img
+                          src={
+                            getImageUrl(item.thumbnailUrl) || "/placeholder.svg"
+                          }
+                          alt={productName}
+                          className="w-full h-full object-contain"
+                        />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-foreground line-clamp-2">
+                          {productName}
+                        </p>
+                        <div className="flex items-center gap-2 mt-2">
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={() => updateQuantity(item.productId, -1)}
+                            aria-label="수량 감소"
+                          >
+                            <Minus className="w-4 h-4" />
+                          </Button>
+                          <span className="w-10 text-center font-semibold">
+                            {item.quantity}
+                          </span>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={() => updateQuantity(item.productId, 1)}
+                            aria-label="수량 증가"
+                          >
+                            <Plus className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-bold text-primary">
+                          ₩{(unitPrice * item.quantity).toLocaleString()}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          (개당 ₩{unitPrice.toLocaleString()})
+                        </p>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <p className="font-bold text-primary">
-                        ₩{(unitPrice * item.quantity).toLocaleString()}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        (개당 ₩{unitPrice.toLocaleString()})
-                      </p>
-                    </div>
+                  )
+                })}
+              </Card>
+
+              <Card className="p-6 space-y-4">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-xl font-bold text-foreground">
+                    추천 상품
+                  </h2>
+                  {recommendationLoading && (
+                    <span className="text-sm text-muted-foreground">
+                      불러오는 중...
+                    </span>
+                  )}
+                </div>
+                {recommendationError && (
+                  <p className="text-sm text-red-600">{recommendationError}</p>
+                )}
+                {!recommendationLoading &&
+                  !recommendationError &&
+                  recommendedProducts.length === 0 && (
+                    <p className="text-sm text-muted-foreground">
+                      추천 상품이 없습니다.
+                    </p>
+                  )}
+                {recommendedProducts.length > 0 && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {recommendedProducts.map((product) => (
+                      <Link
+                        key={product.id}
+                        href={`/product/${product.id}`}
+                        className="group"
+                      >
+                        <div className="flex items-center gap-3 rounded-lg border border-border/60 bg-card p-3 transition hover:border-primary/60 hover:shadow-md">
+                          <div className="w-16 h-16 bg-white rounded-md border border-border/60 overflow-hidden">
+                            <img
+                              src={
+                                getImageUrl(product.thumbnailKey) ||
+                                "/placeholder.svg"
+                              }
+                              alt={product.name}
+                              className="w-full h-full object-contain"
+                            />
+                          </div>
+                          <div className="min-w-0">
+                            <p className="font-semibold text-foreground line-clamp-1 group-hover:text-primary">
+                              {product.name}
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              ₩{product.price.toLocaleString()}
+                            </p>
+                          </div>
+                        </div>
+                      </Link>
+                    ))}
                   </div>
-                )
-              })}
-            </Card>
+                )}
+              </Card>
+            </div>
 
             <Card className="p-6 space-y-4">
               <h2 className="text-xl font-bold text-foreground">주문 요약</h2>

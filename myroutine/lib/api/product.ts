@@ -135,3 +135,20 @@ export const autocompleteApi = {
       params,
     }),
 }
+
+export interface ProductRecommendationRequest {
+  cartItemProductIds: string[]
+  withdrawAmount: number
+}
+
+export interface ProductRecommendationInfo {
+  productIds: string[]
+}
+
+export const recommendationApi = {
+  getRecommendedProducts: (data: ProductRecommendationRequest) =>
+    apiClient.post<ProductRecommendationInfo>(
+      "/support-service/api/v1/recommendations",
+      data
+    ),
+}
