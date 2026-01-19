@@ -230,9 +230,11 @@ export default function Header() {
 
             {!isLoading && isLoggedIn ? (
               <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground">
-                  {memberNickname ? `${memberNickname}님` : "로그인됨"}
-                </span>
+                {memberNickname && (
+                  <span className="text-sm text-muted-foreground">
+                    {memberNickname}님
+                  </span>
+                )}
                 <Button
                   variant="ghost"
                   size="icon"
