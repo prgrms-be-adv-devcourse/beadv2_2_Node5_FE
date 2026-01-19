@@ -1,3 +1,4 @@
+import { get } from "http"
 import { apiClient, type PageResponse } from "../api-client"
 import {
   InquiryListResponse,
@@ -54,7 +55,7 @@ export interface InquiryAnswerRequest {
   message: string
 }
 
-export const adminApi = {
+export const memberServiceAdminApi = {
   getMemberRoles: () =>
     apiClient.get<RoleResponse>("/member-service/api/v1/admin/members/roles"),
   getMembers: (params?: { page?: number; size?: number; sort?: string }) =>
@@ -108,5 +109,73 @@ export const adminApi = {
   deleteInquiryAnswer: (inquiryId: string) =>
     apiClient.delete<void>(
       `/member-service/api/v1/admin/inquiries/${inquiryId}/answer`
+    ),
+}
+
+export enum batchStatus {
+  COMPLETED = "COMPLETED",
+  STARTING = "STARTING",
+  STARTED = "STARTED",
+  STOPPING = "STOPPING",
+  STOPPED = "STOPPED",
+  FAILED = "FAILED",
+  ABANDONED = "ABANDONED",
+  UNKNOWN = "UNKNOWN",
+}
+
+export enum exitStatus {
+  UNKNOWN = "UNKNOWN",
+  EXECUTING = "EXECUTING",
+  COMPLETED = "COMPLETED",
+  NOOP = "NOOP",
+  FAILED = "FAILED",
+  STOPPED = "STOPPED",
+}
+
+export interface ReviewSummaryExecutionListResponse {
+  executionId: number
+  batchStatus: batchStatus
+  exitStatus: exitStatus
+  startTime: string
+  endTime: string
+}
+
+export interface ReviewSummaryExecutionInfoResponse {
+  executionId: number
+  batchStatus: batchStatus
+  exitStatus: exitStatus
+  startTime: string
+  endTime: string
+  failureExceptions: string[]
+  steps: StepExecutionResponse[]
+}
+
+export interface StepExecutionResponse {
+  stepName: string
+  batchStatus: batchStatus
+  exitStatus: exitStatus
+  readCount: number
+  writeCount: number
+  skipCount: number
+  failureExceptions: string[]
+}
+
+export interface JobExecutionResponse {
+  executionId: number
+}
+
+export const reviewSummaryServiceAdminApi = {
+  getExecutions: (page: number, size: number) =>
+    apiClient.get<ReviewSummaryExecutionListResponse[]>(
+      `/support-service/api/v1/admin/review-summary/batch/executions`,
+      { params: { page, size } }
+    ),
+  getExecutionInfo: (executionId: number) =>
+    apiClient.get<ReviewSummaryExecutionInfoResponse>(
+      `/support-service/api/v1/admin/review-summary/batch/executions/${executionId}`
+    ),
+  restartExecution: (executionId: number) =>
+    apiClient.post<JobExecutionResponse>(
+      `/support-service/api/v1/admin/review-summary/batch/executions/${executionId}/restart`
     ),
 }
