@@ -287,7 +287,13 @@ export default function ShopDetailPage() {
         throw new Error("이미지 업로드에 실패했습니다.")
       }
 
-      const imageUrl = presigned.key || presigned.url.split("?")[0] || ""
+      const confirmed = await sellerProductApi.confirmPresignedUrl({
+        tempKey: presigned.tempKey,
+      })
+      const productKey = confirmed?.productKey
+      if (!productKey) {
+        throw new Error("이미지 확인에 실패했습니다.")
+      }
 
       const createdProduct = await sellerProductApi.createProduct(shop.id, {
         name: createForm.name.trim(),
@@ -295,7 +301,7 @@ export default function ShopDetailPage() {
         price: Number(createForm.price),
         status: ProductStatus.ON_SALE,
         category: createForm.category,
-        thumbnailKey: imageUrl || "/placeholder.svg",
+        thumbnailKey: productKey,
       })
       const createdProductId = createdProduct?.id
       if (!createdProductId) {

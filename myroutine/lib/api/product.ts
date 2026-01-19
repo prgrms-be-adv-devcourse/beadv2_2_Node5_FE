@@ -46,7 +46,15 @@ export interface ProductPresignedRequest {
 
 export interface ProductPresignedResponse {
   url: string
-  key: string
+  tempKey: string
+}
+
+export interface ConfirmImageRequest {
+  tempKey: string
+}
+
+export interface ConfirmImageResponse {
+  productKey: string
 }
 
 export const productApi = {
@@ -90,6 +98,11 @@ export const sellerProductApi = {
   getPresignedUrl: (data: ProductPresignedRequest) =>
     apiClient.post<ProductPresignedResponse>(
       `/catalog-service/api/v1/seller/products/images/presigned-url`,
+      data
+    ),
+  confirmPresignedUrl: (data: ConfirmImageRequest) =>
+    apiClient.post<ConfirmImageResponse>(
+      `/catalog-service/api/v1/seller/products/images/confirm`,
       data
     ),
 }
