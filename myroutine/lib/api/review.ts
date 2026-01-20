@@ -90,6 +90,6 @@ export const reviewApi = {
   hasMemberReviewedProduct: (productId: string, data: ReviewStatusRequest) =>
     apiClient.get<ReviewStatusInfo>(
       `/support-service/api/v1/reviews/${productId}/reviewed`,
-      { body: data }
+      { params: data }
     ),
 }

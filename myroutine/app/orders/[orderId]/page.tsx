@@ -151,6 +151,11 @@ export default function OrderDetailPage() {
   const canCancel = order?.status === OrderStatus.PAID
   const canRefund = order?.status === OrderStatus.SETTLEMENT_REQUESTED
 
+  const orderStatusLabel =
+    order?.status === OrderStatus.SETTLEMENT_REQUESTED
+      ? "COMPLETE"
+      : order?.status || "UNKNOWN"
+
   const getReviewForm = (productId: string) =>
     reviewForms[productId] ?? {
       rating: 0,
@@ -288,7 +293,7 @@ export default function OrderDetailPage() {
           <div className="text-right">
             <p className="text-sm text-muted-foreground">상태</p>
             <p className="text-lg font-semibold text-primary">
-              {order?.status || "UNKNOWN"}
+              {orderStatusLabel}
             </p>
           </div>
         </div>
@@ -307,6 +312,9 @@ export default function OrderDetailPage() {
                   <div className="flex-1">
                     <p className="font-semibold text-foreground">
                       {item.productName}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      상태 {item.status || "-"}
                     </p>
                     <p className="text-sm text-muted-foreground">
                       수량 {item.quantity}개 • ₩{item.unitPrice.toLocaleString()}

@@ -210,11 +210,7 @@ class ApiClient {
 
   async get<T>(
     endpoint: string,
-    options?: {
-      params?: Record<string, any>
-      headers?: Record<string, string>
-      body?: any
-    }
+    options?: { params?: Record<string, any>; headers?: Record<string, string> }
   ): Promise<T> {
     return this.request<T>("GET", endpoint, options)
   }
