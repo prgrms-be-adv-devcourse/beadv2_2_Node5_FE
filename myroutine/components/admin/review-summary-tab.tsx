@@ -16,12 +16,6 @@ type BatchStatusValue =
   | null
   | undefined
 
-type ExitStatusValue =
-  | string
-  | { exitCode: string | number; exitDescription?: string; running?: boolean }
-  | null
-  | undefined
-
 const formatBatchStatus = (value: BatchStatusValue) => {
   if (!value) return "-"
   if (typeof value === "string") return value
@@ -29,35 +23,14 @@ const formatBatchStatus = (value: BatchStatusValue) => {
   return value.status ?? "-"
 }
 
-const formatExitStatus = (value: ExitStatusValue) => {
-  if (!value) return "-"
-  if (typeof value === "string") return value
-  if (value.running) return "RUNNING"
-  const code = value.exitCode ?? "-"
-  return value.exitDescription
-    ? `${code} · ${value.exitDescription}`
-    : String(code)
-}
-
-const getExitCode = (value: ExitStatusValue) => {
-  if (!value) return null
-  if (typeof value === "string") return value
-  return value.exitCode ?? null
-}
-
-const isRunningStatus = (value: ExitStatusValue | BatchStatusValue) => {
+const isRunningStatus = (value: BatchStatusValue) => {
   if (!value || typeof value === "string") return false
   return Boolean(value.running)
 }
 
-const isRestartable = (
-  batchStatus: BatchStatusValue,
-  exitStatus: ExitStatusValue
-) => {
-  if (isRunningStatus(batchStatus) || isRunningStatus(exitStatus)) return false
-  const exitCode = getExitCode(exitStatus)
-  if (!exitCode) return true
-  const normalized = String(exitCode).toUpperCase()
+const isRestartable = (batchStatus: BatchStatusValue) => {
+  if (isRunningStatus(batchStatus)) return false
+  const normalized = formatBatchStatus(batchStatus).toUpperCase()
   if (normalized === "COMPLETED" || normalized === "SUCCESS") return false
   return true
 }
@@ -236,12 +209,9 @@ export default function ReviewSummaryAdminTab() {
                       </p>
                     </div>
                     <div className="flex flex-wrap items-center gap-2">
-                            <Badge variant="secondary">
-                              {formatBatchStatus(execution.batchStatus)}
-                            </Badge>
-                            <Badge variant="outline">
-                              {formatExitStatus(execution.exitStatus)}
-                            </Badge>
+                      <Badge variant="secondary">
+                        {formatBatchStatus(execution.batchStatus)}
+                      </Badge>
                     </div>
                   </div>
                   <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -255,10 +225,7 @@ export default function ReviewSummaryAdminTab() {
                     >
                       상세 보기
                     </Button>
-                    {isRestartable(
-                      execution.batchStatus,
-                      execution.exitStatus
-                    ) && (
+                    {isRestartable(execution.batchStatus) && (
                       <Button
                         size="sm"
                         variant="destructive"
@@ -357,19 +324,13 @@ export default function ReviewSummaryAdminTab() {
                     <Badge variant="secondary">
                       {formatBatchStatus(executionDetail.batchStatus)}
                     </Badge>
-                    <Badge variant="outline">
-                      {formatExitStatus(executionDetail.exitStatus)}
-                    </Badge>
                   </div>
                   <div className="text-xs text-muted-foreground">
                     시작 {formatDateTime(executionDetail.startTime)} · 종료{" "}
                     {formatDateTime(executionDetail.endTime)}
                   </div>
                   <div className="flex flex-wrap items-center gap-2">
-                    {isRestartable(
-                      executionDetail.batchStatus,
-                      executionDetail.exitStatus
-                    ) && (
+                    {isRestartable(executionDetail.batchStatus) && (
                       <Button
                         size="sm"
                         variant="destructive"
@@ -425,9 +386,6 @@ export default function ReviewSummaryAdminTab() {
                                 <div className="flex flex-wrap items-center gap-2">
                                   <Badge variant="secondary">
                                     {formatBatchStatus(step.batchStatus)}
-                                  </Badge>
-                                  <Badge variant="outline">
-                                    {formatExitStatus(step.exitStatus)}
                                   </Badge>
                                 </div>
                               </div>

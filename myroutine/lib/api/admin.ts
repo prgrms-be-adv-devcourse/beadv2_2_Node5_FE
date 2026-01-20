@@ -1,4 +1,3 @@
-import { get } from "http"
 import { apiClient, type PageResponse } from "../api-client"
 import {
   InquiryListResponse,
@@ -123,19 +122,9 @@ export enum batchStatus {
   UNKNOWN = "UNKNOWN",
 }
 
-export enum exitStatus {
-  UNKNOWN = "UNKNOWN",
-  EXECUTING = "EXECUTING",
-  COMPLETED = "COMPLETED",
-  NOOP = "NOOP",
-  FAILED = "FAILED",
-  STOPPED = "STOPPED",
-}
-
 export interface ReviewSummaryExecutionListResponse {
   executionId: number
   batchStatus: batchStatus
-  exitStatus: exitStatus
   startTime: string
   endTime: string
 }
@@ -143,7 +132,6 @@ export interface ReviewSummaryExecutionListResponse {
 export interface ReviewSummaryExecutionInfoResponse {
   executionId: number
   batchStatus: batchStatus
-  exitStatus: exitStatus
   startTime: string
   endTime: string
   failureExceptions: string[]
@@ -153,7 +141,6 @@ export interface ReviewSummaryExecutionInfoResponse {
 export interface StepExecutionResponse {
   stepName: string
   batchStatus: batchStatus
-  exitStatus: exitStatus
   readCount: number
   writeCount: number
   skipCount: number
@@ -167,15 +154,15 @@ export interface JobExecutionResponse {
 export const reviewSummaryServiceAdminApi = {
   getExecutions: (page: number, size: number) =>
     apiClient.get<ReviewSummaryExecutionListResponse[]>(
-      `/support-service/api/v1/admin/review-summary/batch/executions`,
+      `/batch-service/api/v1/admin/review-summary/batch/executions`,
       { params: { page, size } }
     ),
   getExecutionInfo: (executionId: number) =>
     apiClient.get<ReviewSummaryExecutionInfoResponse>(
-      `/support-service/api/v1/admin/review-summary/batch/executions/${executionId}`
+      `/batch-service/api/v1/admin/review-summary/batch/executions/${executionId}`
     ),
   restartExecution: (executionId: number) =>
     apiClient.post<JobExecutionResponse>(
-      `/support-service/api/v1/admin/review-summary/batch/executions/${executionId}/restart`
+      `/batch-service/api/v1/admin/review-summary/batch/executions/${executionId}/restart`
     ),
 }
