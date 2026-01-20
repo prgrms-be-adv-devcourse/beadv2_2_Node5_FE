@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 import {
   orderApi,
   type OrderDetailInfo,
@@ -313,16 +314,18 @@ export default function OrderDetailPage() {
                     <p className="font-semibold text-foreground">
                       {item.productName}
                     </p>
-                    <p className="text-xs text-muted-foreground">
-                      상태 {item.status || "-"}
-                    </p>
                     <p className="text-sm text-muted-foreground">
                       수량 {item.quantity}개 • ₩{item.unitPrice.toLocaleString()}
                     </p>
                   </div>
-                  <p className="font-bold text-foreground">
-                    ₩{item.totalPrice.toLocaleString()}
-                  </p>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="secondary">
+                      {item.status || "UNKNOWN"}
+                    </Badge>
+                    <p className="font-bold text-foreground">
+                      ₩{item.totalPrice.toLocaleString()}
+                    </p>
+                  </div>
                 </div>
 
                 {canShowReviewForm(item.productId, item.status) && (
