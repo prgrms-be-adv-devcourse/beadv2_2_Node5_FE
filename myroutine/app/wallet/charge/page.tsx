@@ -87,7 +87,7 @@ export default function WalletChargePage() {
           })
           setStatus("success")
           setMessage(null)
-          router.push("/dashboard?tab=wallet")
+          router.push("/dashboard?tab=info")
         } else {
           await paymentApi.failurePayment({
             paymentKey,
@@ -228,7 +228,7 @@ export default function WalletChargePage() {
             </div>
 
             <div className="flex gap-2 pt-2">
-              <Link href="/dashboard?tab=wallet" className="flex-1">
+              <Link href="/dashboard?tab=info" className="flex-1">
                 <Button variant="outline" className="w-full">
                   대시보드로
                 </Button>

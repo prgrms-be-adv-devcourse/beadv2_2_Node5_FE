@@ -46,35 +46,35 @@ export interface SubscriptionUpdateRequest {
 export const subscriptionApi = {
   getSubscription: (id: string) =>
     apiClient.get<SubscriptionInfo>(
-      `/subscription-service/api/v1/subscriptions/${id}`
+      `/order-service/api/v1/subscriptions/${id}`
     ),
   getSubscriptions: (page = 0, size = 10, sort = "createdAt,desc") =>
     apiClient.get<PageResponse<SubscriptionInfo>>(
-      "/subscription-service/api/v1/subscriptions",
+      "/order-service/api/v1/subscriptions",
       {
         params: { page, size, sort },
       }
     ),
   createSubscription: (data: SubscriptionCreateRequest) =>
     apiClient.post<SubscriptionInfo>(
-      "/subscription-service/api/v1/subscriptions",
+      "/order-service/api/v1/subscriptions",
       data
     ),
   updateSubscription: (id: string, data: SubscriptionUpdateRequest) =>
     apiClient.put<SubscriptionInfo>(
-      `/subscription-service/api/v1/subscriptions/${id}`,
+      `/order-service/api/v1/subscriptions/${id}`,
       data
     ),
   pauseSubscription: (id: string) =>
     apiClient.patch<SubscriptionInfo>(
-      `/subscription-service/api/v1/subscriptions/${id}/pause`
+      `/order-service/api/v1/subscriptions/${id}/pause`
     ),
   resumeSubscription: (id: string) =>
     apiClient.put<SubscriptionInfo>(
-      `/subscription-service/api/v1/subscriptions/${id}/resume`
+      `/order-service/api/v1/subscriptions/${id}/resume`
     ),
   cancelSubscription: (id: string) =>
     apiClient.delete<SubscriptionInfo>(
-      `/subscription-service/api/v1/subscriptions/${id}`
+      `/order-service/api/v1/subscriptions/${id}`
     ),
 }
