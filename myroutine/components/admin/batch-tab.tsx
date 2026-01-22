@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import {
-  reviewSummaryServiceAdminApi,
+  batchServiceAdminApi,
   type BatchExecutionRow,
   type BatchExecutionWithSteps,
 } from "@/lib/api/admin"
@@ -31,7 +31,7 @@ const formatDateTime = (value?: string) => {
     .slice(11, 16)}`
 }
 
-export default function ReviewSummaryAdminTab() {
+export default function BatchAdminTab() {
   const [jobNames, setJobNames] = useState<string[]>([])
   const [jobNamesLoading, setJobNamesLoading] = useState(false)
   const [jobNamesError, setJobNamesError] = useState<string | null>(null)
@@ -62,7 +62,7 @@ export default function ReviewSummaryAdminTab() {
       setJobNamesLoading(true)
       setJobNamesError(null)
       try {
-        const res = await reviewSummaryServiceAdminApi.getJobNames()
+        const res = await batchServiceAdminApi.getJobNames()
         const nextNames = Array.isArray(res) ? res : []
         setJobNames(nextNames)
         if (selectedJobName && !nextNames.includes(selectedJobName)) {
@@ -93,7 +93,7 @@ export default function ReviewSummaryAdminTab() {
       setReviewLoading(true)
       setReviewError(null)
       try {
-        const res = await reviewSummaryServiceAdminApi.getExecutions(
+        const res = await batchServiceAdminApi.getExecutions(
           selectedJobName,
           reviewPage,
           10
@@ -102,7 +102,7 @@ export default function ReviewSummaryAdminTab() {
         setReviewTotalPages(res?.totalPages ?? 1)
       } catch (err: any) {
         setReviewError(
-          err?.message || "리뷰 요약 배치 목록을 불러오지 못했습니다."
+          err?.message || "배치 실행 목록을 불러오지 못했습니다."
         )
         setReviewExecutions([])
         setReviewTotalPages(1)
@@ -124,7 +124,7 @@ export default function ReviewSummaryAdminTab() {
       setExecutionDetailLoading(true)
       setExecutionDetailError(null)
       try {
-        const res = await reviewSummaryServiceAdminApi.getExecutionInfo(
+        const res = await batchServiceAdminApi.getExecutionInfo(
           selectedExecutionId
         )
         setExecutionDetail(res)
@@ -147,7 +147,7 @@ export default function ReviewSummaryAdminTab() {
         <CardHeader className="flex items-start justify-between gap-4">
           <div className="space-y-2">
             <CardTitle className="text-xl font-bold text-foreground">
-              리뷰 요약 배치 관리
+              배치 관리
             </CardTitle>
             <p className="text-sm text-muted-foreground">
               배치 실행 상태를 확인할 수 있습니다.
@@ -326,7 +326,7 @@ export default function ReviewSummaryAdminTab() {
             <div className="flex items-center justify-between border-b border-border px-6 py-4">
               <div className="space-y-1">
                 <p className="text-sm text-muted-foreground">
-                  리뷰 요약 배치 상세
+                  배치 실행 상세
                 </p>
                 <p className="text-lg font-semibold text-foreground">
                   실행 ID {selectedExecutionId ?? "-"}

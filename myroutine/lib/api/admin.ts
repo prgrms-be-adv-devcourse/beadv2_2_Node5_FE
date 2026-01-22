@@ -141,7 +141,7 @@ export interface BatchStepExecutionRow {
   exitMessage: string
 }
 
-export const reviewSummaryServiceAdminApi = {
+export const batchServiceAdminApi = {
   getJobNames: () =>
     apiClient.get<string[]>(`/support-service/api/v1/admin/batch/job-names`),
   getExecutions: (jobName: string, page: number, size: number) =>
