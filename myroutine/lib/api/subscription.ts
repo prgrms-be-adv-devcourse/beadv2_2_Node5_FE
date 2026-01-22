@@ -70,7 +70,7 @@ export const subscriptionApi = {
       `/order-service/api/v1/subscriptions/${id}/pause`
     ),
   resumeSubscription: (id: string) =>
-    apiClient.put<SubscriptionInfo>(
+    apiClient.patch<SubscriptionInfo>(
       `/order-service/api/v1/subscriptions/${id}/resume`
     ),
   cancelSubscription: (id: string) =>
