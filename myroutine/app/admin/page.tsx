@@ -6,15 +6,21 @@ import EndpointAdminTab from "@/components/admin/endpoint-tab"
 import InquiriesAdminTab from "@/components/admin/inquiries-tab"
 import MemberAdminTab from "@/components/admin/member-tab"
 import BatchAdminTab from "@/components/admin/batch-tab"
+import SponsoredProductAdminTab from "@/components/admin/sponsored-tab"
 
-type AdminSection = "members" | "paths" | "inquiries" | "batch"
+type AdminSection = "members" | "paths" | "inquiries" | "batch" | "sponsored"
 
 export default function AdminPage() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const [activeSection, setActiveSection] = useState<AdminSection>(() => {
     const tab = searchParams?.get("tab")
-    if (tab === "paths" || tab === "inquiries" || tab === "batch") {
+    if (
+      tab === "paths" ||
+      tab === "inquiries" ||
+      tab === "batch" ||
+      tab === "sponsored"
+    ) {
       return tab
     }
     return "members"
@@ -22,7 +28,13 @@ export default function AdminPage() {
 
   useEffect(() => {
     const tab = searchParams?.get("tab")
-    if (tab === "members" || tab === "paths" || tab === "inquiries" || tab === "batch") {
+    if (
+      tab === "members" ||
+      tab === "paths" ||
+      tab === "inquiries" ||
+      tab === "batch" ||
+      tab === "sponsored"
+    ) {
       if (tab !== activeSection) setActiveSection(tab)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -81,6 +93,17 @@ export default function AdminPage() {
           >
             배치 관리
           </button>
+          <button
+            type="button"
+            onClick={() => handleSectionChange("sponsored")}
+            className={`w-full text-left rounded-md px-3 py-2 text-sm font-semibold ${
+              activeSection === "sponsored"
+                ? "bg-muted text-foreground"
+                : "text-muted-foreground hover:bg-muted"
+            }`}
+          >
+            스폰서 상품
+          </button>
         </nav>
       </aside>
 
@@ -90,6 +113,7 @@ export default function AdminPage() {
           {activeSection === "paths" && <EndpointAdminTab />}
           {activeSection === "inquiries" && <InquiriesAdminTab />}
           {activeSection === "batch" && <BatchAdminTab />}
+          {activeSection === "sponsored" && <SponsoredProductAdminTab />}
         </div>
       </main>
     </div>

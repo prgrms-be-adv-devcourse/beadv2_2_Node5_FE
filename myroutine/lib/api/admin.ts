@@ -154,3 +154,14 @@ export const batchServiceAdminApi = {
       `/support-service/api/v1/admin/batch/executions/${executionId}`
     ),
 }
+
+export const productSponsorAdminApi = {
+  markAsSponsored: (productId: string) =>
+    apiClient.post<void>(
+      `/support-service/admin/sponsored-products/${productId}`
+    ),
+  unmarkAsSponsored: (productId: string) =>
+    apiClient.delete<void>(
+      `/support-service/admin/sponsored-products/${productId}`
+    ),
+}
