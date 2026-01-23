@@ -241,7 +241,10 @@ export default function OrdersTab() {
                     <div className="space-y-1">
                       <div className="text-sm text-muted-foreground mb-1">
                         {formatDate(order.date)}
-                        {order.status ? ` • ${order.status}` : ""}
+                        {order.status === "CANCELED" ||
+                        order.status === "PAYMENT_FAILED"
+                          ? ` • ${order.status}`
+                          : ""}
                       </div>
                       <h3 className="text-xl font-bold text-foreground">
                         {order.productName}

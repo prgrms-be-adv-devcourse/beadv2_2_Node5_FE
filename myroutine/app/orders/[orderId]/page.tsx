@@ -151,6 +151,8 @@ export default function OrderDetailPage() {
 
   const canCancel = order?.status === OrderStatus.PAID
   const canRefund = order?.status === OrderStatus.SETTLEMENT_REQUESTED
+  const shouldShowOrderStatus =
+    order?.status === "CANCELED" || order?.status === "PAYMENT_FAILED"
 
   const orderStatusLabel =
     order?.status === OrderStatus.SETTLEMENT_REQUESTED
@@ -291,19 +293,19 @@ export default function OrderDetailPage() {
               {orderedItems[0]?.productName || "상품명 없음"}
             </h2>
           </div>
-          <div className="text-right">
-            <p className="text-sm text-muted-foreground">상태</p>
-            <p className="text-lg font-semibold text-primary">
-              {orderStatusLabel}
-            </p>
-          </div>
+          {shouldShowOrderStatus && (
+            <div className="text-right">
+              <p className="text-sm text-muted-foreground">상태</p>
+              <p className="text-lg font-semibold text-primary">
+                {orderStatusLabel}
+              </p>
+            </div>
+          )}
         </div>
 
         <div className="border-t border-border pt-4 space-y-3">
           {orderedItems.map((item) => {
             const form = getReviewForm(item.productId)
-            const shouldShowStatus =
-              item.status === "CANCELED" || item.status === "PAYMENT_FAILED"
             return (
               <div key={item.productId} className="space-y-4">
                 <div className="flex items-center gap-4">
@@ -321,9 +323,9 @@ export default function OrderDetailPage() {
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
-                    {shouldShowStatus && (
-                      <Badge variant="secondary">{item.status}</Badge>
-                    )}
+                    <Badge variant="secondary">
+                      {item.status || "UNKNOWN"}
+                    </Badge>
                     <p className="font-bold text-foreground">
                       ₩{item.totalPrice.toLocaleString()}
                     </p>
