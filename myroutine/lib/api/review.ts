@@ -44,7 +44,7 @@ export interface ReviewSummaryInfoResponse {
 }
 
 export interface ReviewStatusInfo {
-  reviewed: boolean
+  reviewable: boolean
 }
 
 export interface ReviewStatusRequest {

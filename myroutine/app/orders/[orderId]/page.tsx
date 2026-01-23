@@ -98,7 +98,7 @@ export default function OrderDetailPage() {
               orderId: order.orderId,
               productId,
             })
-            return [productId, res.reviewed] as [string, boolean]
+            return [productId, res.reviewable] as [string, boolean]
           } catch {
             return [productId, null] as [string, null]
           }
@@ -107,8 +107,8 @@ export default function OrderDetailPage() {
       if (!isActive) return
       setReviewStatusByProduct((prev) => {
         const next = { ...prev }
-        entries.forEach(([productId, reviewed]) => {
-          next[productId] = reviewed
+        entries.forEach(([productId, reviewable]) => {
+          next[productId] = reviewable
         })
         return next
       })
@@ -219,7 +219,7 @@ export default function OrderDetailPage() {
   const canShowReviewForm = (
     productId: string,
     itemStatus?: string
-  ) => reviewStatusByProduct[productId] === false
+  ) => reviewStatusByProduct[productId] === true
 
   const handleCancel = async () => {
     if (!order?.orderId) return
