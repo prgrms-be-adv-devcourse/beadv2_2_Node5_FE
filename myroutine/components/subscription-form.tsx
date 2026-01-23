@@ -44,6 +44,11 @@ export default function SubscriptionForm({
     typeof product.price === "string"
       ? Number(product.price)
       : product.price || 0
+  const weeklyMultiplier = selectedDaysOfWeek.length || 0
+  const estimatedTotal =
+    recurrenceType === "WEEKLY"
+      ? price * quantity * weeklyMultiplier
+      : price * quantity
 
   const handleDayOfWeekToggle = (day: DayOfWeek) => {
     setSelectedDaysOfWeek((prev) =>
@@ -272,13 +277,15 @@ export default function SubscriptionForm({
                 <span className="text-foreground font-bold">예상 총 비용</span>
                 <span className="text-2xl font-bold text-primary">
                   ₩
-                  {Number.isFinite(price * quantity)
-                    ? (price * quantity).toLocaleString()
+                  {Number.isFinite(estimatedTotal)
+                    ? estimatedTotal.toLocaleString()
                     : 0}
                 </span>
               </div>
               <p className="text-xs text-muted-foreground mt-2">
-                {recurrenceType === "WEEKLY" ? "주간" : "월간"} 기준
+                {recurrenceType === "WEEKLY"
+                  ? `주간 기준 (선택 요일 ${weeklyMultiplier}회)`
+                  : "월간 기준"}
               </p>
             </div>
 
