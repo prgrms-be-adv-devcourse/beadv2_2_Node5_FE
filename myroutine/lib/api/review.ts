@@ -87,9 +87,9 @@ export const reviewApi = {
     ),
   likeReview: (reviewId: string) =>
     apiClient.post<void>(`/support-service/api/v1/reviews/${reviewId}/like`),
-  hasMemberReviewedProduct: (productId: string, data: ReviewStatusRequest) =>
+  hasMemberReviewedProduct: (data: ReviewStatusRequest) =>
     apiClient.get<ReviewStatusInfo>(
-      `/support-service/api/v1/reviews/${productId}/reviewed`,
+      `/support-service/api/v1/reviews/reviewed`,
       { params: data }
     ),
 }
