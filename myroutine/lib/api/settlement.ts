@@ -24,7 +24,7 @@ export const settlementApi = {
     page = 0
   ) =>
     apiClient.get<SettlementListInfo>(
-      `/settlement-service/api/v1/settlements/history`,
+      `/member-service/api/v1/settlements/history`,
       {
         params: { shopId, startDate, endDate, page },
       }

@@ -177,8 +177,12 @@ export default function ProductDetailPage() {
             : review
         )
       )
-    } catch (err) {
-      console.error(err)
+    } catch (err: any) {
+      if (err?.code === "REVIEW_008") {
+        window.alert(err?.message || "본인의 리뷰는 공감할 수 없습니다.")
+      } else {
+        console.error(err)
+      }
     } finally {
       setLikingReviewIds((prev) => ({ ...prev, [reviewId]: false }))
     }
