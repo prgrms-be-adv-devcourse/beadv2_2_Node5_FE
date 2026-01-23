@@ -302,6 +302,8 @@ export default function OrderDetailPage() {
         <div className="border-t border-border pt-4 space-y-3">
           {orderedItems.map((item) => {
             const form = getReviewForm(item.productId)
+            const shouldShowStatus =
+              item.status === "CANCELED" || item.status === "PAYMENT_FAILED"
             return (
               <div key={item.productId} className="space-y-4">
                 <div className="flex items-center gap-4">
@@ -319,9 +321,9 @@ export default function OrderDetailPage() {
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Badge variant="secondary">
-                      {item.status || "UNKNOWN"}
-                    </Badge>
+                    {shouldShowStatus && (
+                      <Badge variant="secondary">{item.status}</Badge>
+                    )}
                     <p className="font-bold text-foreground">
                       ₩{item.totalPrice.toLocaleString()}
                     </p>
