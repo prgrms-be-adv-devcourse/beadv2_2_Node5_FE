@@ -24,16 +24,19 @@ export default function Home() {
   const syncFromParams = () => {
     const q = searchParams.get("q") || ""
     const category = searchParams.get("category")
-    const sortParam = searchParams.get("sort") as ProductSearchSort | null
-    const nextSort = sortParam && Object.values(ProductSearchSort).includes(sortParam)
-      ? sortParam
-      : ProductSearchSort.LATEST
     setSearchQuery(q)
     setSelectedCategory(category)
-    setSort(nextSort)
+    setSort(ProductSearchSort.LATEST)
   }
 
   useEffect(() => {
+    if (searchParams.get("orderBy")) {
+      const params = new URLSearchParams(searchParams.toString())
+      params.delete("orderBy")
+      const query = params.toString()
+      router.replace(query ? `/?${query}` : "/")
+      return
+    }
     syncFromParams()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams])
@@ -41,6 +44,7 @@ export default function Home() {
   const handleCategoryChange = (next: string | null) => {
     setSelectedCategory(next)
     const params = new URLSearchParams(searchParams.toString())
+    params.delete("orderBy")
     if (next) {
       params.set("category", next)
     } else {
