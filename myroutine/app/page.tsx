@@ -16,10 +16,9 @@ export default function Home() {
   const router = useRouter()
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
-  const [priceRange, setPriceRange] = useState<[number, number]>(BASE_PRICE_BOUNDS)
-  const [sort, setSort] = useState<ProductSearchSort>(
-    ProductSearchSort.LATEST
-  )
+  const [priceRange, setPriceRange] =
+    useState<[number, number]>(BASE_PRICE_BOUNDS)
+  const [sort, setSort] = useState<ProductSearchSort>(ProductSearchSort.LATEST)
 
   const syncFromParams = () => {
     const q = searchParams.get("q") || ""
@@ -65,7 +64,7 @@ export default function Home() {
         {/* Hero Section */}
         <div className="mb-12">
           <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4 text-balance">
-            매일 신선한 상품을 구독하세요
+            당신의 일상을 구독하세요
           </h1>
           <p className="text-lg text-muted-foreground mb-6 max-w-2xl">
             식품부터 의류까지, 당신이 원하는 상품을 정기적으로 배송받으세요
