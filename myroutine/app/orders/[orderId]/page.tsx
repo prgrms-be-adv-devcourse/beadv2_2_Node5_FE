@@ -150,7 +150,9 @@ export default function OrderDetailPage() {
     )
   }
 
-  const canCancel = order?.status === OrderStatus.PAID
+  const canCancel =
+    order?.status === OrderStatus.PAID &&
+    orderedItems.every((item) => item.status === OrderItemStatus.PAID)
   const shouldShowOrderStatus =
     order?.status === "CANCELED" || order?.status === "PAYMENT_FAILED"
 
