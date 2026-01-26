@@ -89,7 +89,7 @@ export default function ProductGrid({
       const hasSort =
         (debouncedFilters.sort ?? ProductSearchSort.LATEST) !==
         ProductSearchSort.LATEST
-      const shouldUseSearchApi = hasFilter || hasSort
+      const shouldUseSearchApi = page > 0 || hasFilter || hasSort
 
       setIsLoading(true)
       try {

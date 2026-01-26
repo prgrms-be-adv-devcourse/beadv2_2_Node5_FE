@@ -51,13 +51,6 @@ export default function Home() {
 
   const handleSortChange = (next: ProductSearchSort) => {
     setSort(next)
-    const params = new URLSearchParams(searchParams.toString())
-    if (next && next !== ProductSearchSort.LATEST) {
-      params.set("sort", next)
-    } else {
-      params.delete("sort")
-    }
-    router.push(`/?${params.toString()}`)
   }
 
   const searchTerm = useMemo(() => searchQuery || "", [searchQuery])
