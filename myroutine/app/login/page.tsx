@@ -38,6 +38,7 @@ export default function LoginPage() {
       //
       //   window.location.href = naverAuthUrl
       // }
+      }
     } catch (error) {
       console.error(error)
     } finally {
