@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import {
   orderApi,
   type OrderDetailInfo,
+  OrderItemStatus,
   OrderStatus,
   OrderType,
 } from "@/lib/api/order"
@@ -330,6 +331,12 @@ export default function OrderDetailPage() {
                 size="sm"
                 onClick={() => handleRefund(item.productId)}
                 disabled={isActionLoading}
+                className={`${
+                  item.status === OrderItemStatus.DELIVERY_ING ||
+                  item.status === OrderItemStatus.DELIVERY_COMPLETED
+                    ? "inline-flex"
+                    : "hidden"
+                }`}
               >
                 환불 요청
               </Button>
