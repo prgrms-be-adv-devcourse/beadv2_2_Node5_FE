@@ -150,7 +150,6 @@ export default function OrderDetailPage() {
   }
 
   const canCancel = order?.status === OrderStatus.PAID
-  const canRefund = order?.status === OrderStatus.PAID
   const shouldShowOrderStatus =
     order?.status === "CANCELED" || order?.status === "PAYMENT_FAILED"
 
@@ -326,16 +325,14 @@ export default function OrderDetailPage() {
               <p className="font-bold text-foreground">
                 ₩{item.totalPrice.toLocaleString()}
               </p>
-              {canRefund && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleRefund(item.productId)}
-                  disabled={isActionLoading}
-                >
-                  환불 요청
-                </Button>
-              )}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleRefund(item.productId)}
+                disabled={isActionLoading}
+              >
+                환불 요청
+              </Button>
             </div>
           </div>
 
