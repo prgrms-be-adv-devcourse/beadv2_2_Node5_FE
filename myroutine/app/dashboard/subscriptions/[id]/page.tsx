@@ -41,6 +41,17 @@ const normalizeSubscription = (data: SubscriptionInfo): SubscriptionInfo => {
   return { ...data, recurrenceType }
 }
 
+const formatDateTime = (value?: string) => {
+  if (!value) return "-"
+  const parsed = new Date(value)
+  if (Number.isNaN(parsed.getTime())) return value
+  return new Intl.DateTimeFormat("sv-SE", {
+    timeZone: "Asia/Seoul",
+    dateStyle: "short",
+    timeStyle: "medium",
+  }).format(parsed)
+}
+
 export default function SubscriptionDetailPage() {
   const params = useParams<{ id: string }>()
   const router = useRouter()
@@ -333,7 +344,7 @@ export default function SubscriptionDetailPage() {
                 </div>
                 <div>
                   <p className="font-bold text-foreground">생성일</p>
-                  <p>{subscription.createdAt}</p>
+                  <p>{formatDateTime(subscription.createdAt)}</p>
                 </div>
               </div>
             </div>
