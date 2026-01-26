@@ -11,11 +11,16 @@ import {
   type ProductInfoResponse,
   ProductStatus,
 } from "@/lib/api/product"
+import {
+  subscriptionApi,
+  type SubscriptionInfo,
+} from "@/lib/api/subscription"
 import { inventoryApi } from "@/lib/api/inventory"
 import { settlementApi, type SettlementListDetailInfo } from "@/lib/api/settlement"
 import { Mail, Phone, MapPin, X } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import AddressSearchInput from "@/components/address-search-input"
+import { formatDaysOfWeek } from "@/lib/api-client"
 import { CATEGORY_OPTIONS } from "@/lib/categories"
 import { getImageUrl } from "@/lib/image"
 import { formatPhoneNumber, normalizePhoneNumber } from "@/lib/phone"
@@ -140,6 +145,15 @@ export default function ShopDetailPage() {
   const [isSavingProduct, setIsSavingProduct] = useState(false)
   const [isDeletingProduct, setIsDeletingProduct] = useState(false)
   const [isLoadingInventory, setIsLoadingInventory] = useState(false)
+  const [showSubscriptionModal, setShowSubscriptionModal] = useState(false)
+  const [subscriptionTarget, setSubscriptionTarget] =
+    useState<ProductInfoResponse | null>(null)
+  const [subscriptionList, setSubscriptionList] = useState<SubscriptionInfo[]>([])
+  const [subscriptionError, setSubscriptionError] = useState<string | null>(null)
+  const [isLoadingSubscriptions, setIsLoadingSubscriptions] = useState(false)
+  const [subscriptionPage, setSubscriptionPage] = useState(0)
+  const [subscriptionTotalPages, setSubscriptionTotalPages] = useState(1)
+  const subscriptionPageSize = 10
   const [initialStock, setInitialStock] = useState("")
   const [productForm, setProductForm] = useState({
     name: "",
@@ -250,6 +264,52 @@ export default function ShopDetailPage() {
     }
   }
 
+  const fetchSubscriptions = async (
+    product: ProductInfoResponse,
+    page = 0
+  ) => {
+    if (!product?.id) return
+    setIsLoadingSubscriptions(true)
+    setSubscriptionError(null)
+    try {
+      const res = await subscriptionApi.getSubscriptionByProduct(
+        product.id.toString(),
+        page,
+        subscriptionPageSize
+      )
+      setSubscriptionList(res?.content || [])
+      const totalPages =
+        res && typeof res.totalPages === "number" ? res.totalPages : 1
+      setSubscriptionTotalPages(totalPages > 0 ? totalPages : 1)
+      setSubscriptionPage(page)
+    } catch (err: any) {
+      setSubscriptionList([])
+      setSubscriptionError(err?.message || "구독 내역을 불러오지 못했습니다.")
+      setSubscriptionTotalPages(1)
+    } finally {
+      setIsLoadingSubscriptions(false)
+    }
+  }
+
+  const openSubscriptionModal = async (product: ProductInfoResponse) => {
+    if (!product?.id) return
+    setSubscriptionTarget(product)
+    setShowSubscriptionModal(true)
+    setSubscriptionList([])
+    setSubscriptionPage(0)
+    setSubscriptionTotalPages(1)
+    await fetchSubscriptions(product, 0)
+  }
+
+  const closeSubscriptionModal = () => {
+    setShowSubscriptionModal(false)
+    setSubscriptionTarget(null)
+    setSubscriptionList([])
+    setSubscriptionError(null)
+    setSubscriptionPage(0)
+    setSubscriptionTotalPages(1)
+  }
+
   const handleCreateProduct = async () => {
     if (!shop) return
     if (!createForm.name.trim()) {
@@ -356,6 +416,13 @@ export default function ShopDetailPage() {
     const y = date.getFullYear()
     const m = `${date.getMonth() + 1}`.padStart(2, "0")
     return `${y}-${m}`
+  }
+
+  const formatRecurrence = (item: SubscriptionInfo) => {
+    if (item.recurrenceType === "MONTHLY") {
+      return `월간 (${item.dayOfMonth}일)`
+    }
+    return `주간 (${formatDaysOfWeek(item.dayOfWeek || [])})`
   }
 
   const fetchSettlementHistory = async (
@@ -782,16 +849,19 @@ export default function ShopDetailPage() {
                   {shopProducts.map((product) => (
                     <div
                       key={product.id?.toString()}
-                      className="grid grid-cols-[80px_1fr] gap-3 p-4 items-center hover:bg-muted/60 cursor-pointer"
+                      className="grid grid-cols-[80px_1fr_auto] gap-3 p-4 items-center hover:bg-muted/60 cursor-pointer"
                       onClick={() => openProductModal(product)}
                     >
-                    <div className="w-20 h-16 rounded-md bg-muted overflow-hidden">
-                      <img
-                        src={getImageUrl(product.thumbnailKey) || "/placeholder.svg"}
-                        alt={product.name}
-                        className="w-full h-full object-contain bg-white"
-                      />
-                    </div>
+                      <div className="w-20 h-16 rounded-md bg-muted overflow-hidden">
+                        <img
+                          src={
+                            getImageUrl(product.thumbnailKey) ||
+                            "/placeholder.svg"
+                          }
+                          alt={product.name}
+                          className="w-full h-full object-contain bg-white"
+                        />
+                      </div>
                       <div className="space-y-1">
                         <p className="font-semibold text-foreground line-clamp-2">
                           {product.name}
@@ -802,6 +872,18 @@ export default function ShopDetailPage() {
                         <p className="text-xs text-muted-foreground">
                           상태: {product.status || "ON_SALE"}
                         </p>
+                      </div>
+                      <div className="flex items-center justify-end">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={(event) => {
+                            event.stopPropagation()
+                            openSubscriptionModal(product)
+                          }}
+                        >
+                          구독 보기
+                        </Button>
                       </div>
                     </div>
                   ))}
@@ -968,6 +1050,130 @@ export default function ShopDetailPage() {
                 {isSavingProduct ? "저장 중..." : "저장"}
               </Button>
             </div>
+          </Card>
+        </div>
+      )}
+
+      {showSubscriptionModal && subscriptionTarget && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center px-4">
+          <Card className="w-full max-w-3xl p-6 space-y-4 relative">
+            <button
+              className="absolute right-4 top-4 text-muted-foreground hover:text-foreground"
+              onClick={closeSubscriptionModal}
+              aria-label="닫기"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <div className="space-y-1">
+              <h3 className="text-2xl font-bold text-foreground">구독 내역</h3>
+              <p className="text-sm text-muted-foreground">
+                {subscriptionTarget.name}
+              </p>
+            </div>
+
+            {isLoadingSubscriptions && (
+              <p className="text-sm text-muted-foreground">불러오는 중...</p>
+            )}
+
+            {subscriptionError && (
+              <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-md p-2">
+                {subscriptionError}
+              </p>
+            )}
+
+            {!isLoadingSubscriptions &&
+              !subscriptionError &&
+              subscriptionList.length === 0 && (
+                <p className="text-sm text-muted-foreground">
+                  구독 내역이 없습니다.
+                </p>
+              )}
+
+            {!isLoadingSubscriptions &&
+              !subscriptionError &&
+              subscriptionList.length > 0 && (
+                <div className="border rounded-md divide-y divide-border bg-muted/30">
+                  {subscriptionList.map((item) => (
+                    <div
+                      key={item.id}
+                      className="grid grid-cols-1 md:grid-cols-5 gap-3 p-4 text-sm"
+                    >
+                      <div>
+                        <p className="text-muted-foreground">상태</p>
+                        <p className="font-semibold">
+                          {item.subscriptionStatus}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground">주기</p>
+                        <p className="font-semibold">{formatRecurrence(item)}</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground">다음 배송</p>
+                        <p className="font-semibold">
+                          {item.nextRunDate || "미정"}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground">수량</p>
+                        <p className="font-semibold">{item.quantity}개</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground">결제 금액</p>
+                        <p className="font-semibold">
+                          {formatPrice(item.totalPrice)}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+            {!isLoadingSubscriptions &&
+              !subscriptionError &&
+              subscriptionTotalPages > 1 && (
+                <div className="flex items-center justify-between text-sm text-muted-foreground">
+                  <span>
+                    페이지 {subscriptionPage + 1} / {subscriptionTotalPages}
+                  </span>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() =>
+                        subscriptionTarget &&
+                        fetchSubscriptions(
+                          subscriptionTarget,
+                          Math.max(0, subscriptionPage - 1)
+                        )
+                      }
+                      disabled={subscriptionPage === 0 || isLoadingSubscriptions}
+                    >
+                      이전
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() =>
+                        subscriptionTarget &&
+                        fetchSubscriptions(
+                          subscriptionTarget,
+                          Math.min(
+                            subscriptionTotalPages - 1,
+                            subscriptionPage + 1
+                          )
+                        )
+                      }
+                      disabled={
+                        subscriptionPage >= subscriptionTotalPages - 1 ||
+                        isLoadingSubscriptions
+                      }
+                    >
+                      다음
+                    </Button>
+                  </div>
+                </div>
+              )}
           </Card>
         </div>
       )}

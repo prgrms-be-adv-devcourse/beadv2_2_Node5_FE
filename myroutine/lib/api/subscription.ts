@@ -77,4 +77,15 @@ export const subscriptionApi = {
     apiClient.delete<SubscriptionInfo>(
       `/order-service/api/v1/subscriptions/${id}`
     ),
+  getSubscriptionByProduct: (
+    productId: string,
+    page = 0,
+    size = 10
+  ) =>
+    apiClient.get<PageResponse<SubscriptionInfo>>(
+      `/order-service/api/v1/shops/subscriptions/${productId}`,
+      {
+        params: { page, size },
+      }
+    ),
 }
