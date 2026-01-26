@@ -240,12 +240,13 @@ export default function OrderDetailPage() {
     setIsActionLoading(true)
     setError(null)
     try {
-      const res = await orderApi.refundOrderByItem(order.orderId, productId)
+      await orderApi.refundOrderByItem(order.orderId, productId)
+      const refreshed = await orderApi.getOrderDetail(order.orderId)
       setOrder((prev) =>
         prev
           ? {
               ...prev,
-              status: res?.status ?? prev.status,
+              ...refreshed,
             }
           : prev
       )
