@@ -31,7 +31,6 @@ export enum OrderStatus {
   CANCELED = "CANCELED",
   PAID = "PAID",
   PAYMENT_FAILED = "PAYMENT_FAILED",
-  SETTLEMENT_REQUESTED = "SETTLEMENT_REQUESTED",
 }
 
 export interface OrderListDetailInfo {
@@ -108,8 +107,8 @@ export const orderApi = {
     apiClient.patch<OrderStatusInfo>(
       `/order-service/api/v1/orders/${orderId}/cancel`
     ),
-  refundOrder: (orderId: string) =>
+  refundOrderByItem: (orderId: string, productId: string) =>
     apiClient.patch<OrderStatusInfo>(
-      `/order-service/api/v1/orders/${orderId}/refund`
+      `/order-service/api/v1/orders/${orderId}/items/${productId}/refund`
     ),
 }

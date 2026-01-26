@@ -150,14 +150,11 @@ export default function OrderDetailPage() {
   }
 
   const canCancel = order?.status === OrderStatus.PAID
-  const canRefund = order?.status === OrderStatus.SETTLEMENT_REQUESTED
+  const canRefund = order?.status === OrderStatus.PAID
   const shouldShowOrderStatus =
     order?.status === "CANCELED" || order?.status === "PAYMENT_FAILED"
 
-  const orderStatusLabel =
-    order?.status === OrderStatus.SETTLEMENT_REQUESTED
-      ? "COMPLETE"
-      : order?.status || "UNKNOWN"
+  const orderStatusLabel = order?.status || "UNKNOWN"
 
   const getReviewForm = (productId: string) =>
     reviewForms[productId] ?? {
@@ -242,12 +239,12 @@ export default function OrderDetailPage() {
     }
   }
 
-  const handleRefund = async () => {
-    if (!order?.orderId) return
+  const handleRefund = async (productId: string) => {
+    if (!order?.orderId || !productId) return
     setIsActionLoading(true)
     setError(null)
     try {
-      const res = await orderApi.refundOrder(order.orderId)
+      const res = await orderApi.refundOrderByItem(order.orderId, productId)
       setOrder((prev) =>
         prev
           ? {
@@ -316,21 +313,31 @@ export default function OrderDetailPage() {
                   />
                   <div className="flex-1">
                     <p className="font-semibold text-foreground">
-                      {item.productName}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      수량 {item.quantity}개 • ₩{item.unitPrice.toLocaleString()}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Badge variant="secondary">
-                      {item.status || "UNKNOWN"}
-                    </Badge>
-                    <p className="font-bold text-foreground">
-                      ₩{item.totalPrice.toLocaleString()}
-                    </p>
-                  </div>
-                </div>
+                {item.productName}
+              </p>
+              <p className="text-sm text-muted-foreground">
+                수량 {item.quantity}개 • ₩{item.unitPrice.toLocaleString()}
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <Badge variant="secondary">
+                {item.status || "UNKNOWN"}
+              </Badge>
+              <p className="font-bold text-foreground">
+                ₩{item.totalPrice.toLocaleString()}
+              </p>
+              {canRefund && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleRefund(item.productId)}
+                  disabled={isActionLoading}
+                >
+                  환불 요청
+                </Button>
+              )}
+            </div>
+          </div>
 
                 {canShowReviewForm(item.productId, item.status) && (
                   <div className="rounded-lg border border-border/60 p-4 space-y-3 bg-muted/20">
@@ -434,15 +441,6 @@ export default function OrderDetailPage() {
                 disabled={isActionLoading}
               >
                 주문 취소
-              </Button>
-            )}
-            {canRefund && (
-              <Button
-                variant="outline"
-                onClick={handleRefund}
-                disabled={isActionLoading}
-              >
-                환불 요청
               </Button>
             )}
           </div>
